@@ -1,7 +1,10 @@
 <?php
 use App\Http\Controllers\StudentController; //Lec13 Create Controller
+use App\Http\Controllers\TestController;
+use App\Http\Controllers\ThirdTestController;
+use App\Models\Teachers;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\TeachersController;// Lec 22
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -12,12 +15,13 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
 //Lec:5 Router Explained
 
 Route::get('/', function () {
     return'Welcome To The Laravel Student Management';
 });
-
+/*
 //Lec:6 Route Grouping and naming 
 
 Route::prefix('details')->group(function(){
@@ -59,3 +63,21 @@ Route::controller(StudentController::class)->group (function(){
 Route::get('students','index');
 Route::get('about-us/{id}/{name}','aboutUs'); //Lec 14  Passing Route Data to Controllers
 });
+
+//Lec16 Create Controller
+Route::get('invoke', TestController::class);
+Route::resource('Third-Test', ThirdTestController::class);
+*/
+//Lec 22
+/*
+Route::get('teachers', function (){
+    return Teachers::all();
+}) ;
+ */
+//Lec 22
+Route::get('teachers', [TeachersController::class, 'index']); 
+//Lec 23
+Route::get('add-teachers', [TeachersController::class, 'add']); 
+Route::get('show-teachers/{id}', [TeachersController::class, 'show']); 
+Route::get('update-teachers/{id}', [TeachersController::class, 'update']); 
+Route::get('delete-teachers/{id}', [TeachersController::class, 'delete']); 
