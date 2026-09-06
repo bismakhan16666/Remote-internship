@@ -74,6 +74,7 @@ Route::get('teachers', function (){
     return Teachers::all();
 }) ;
  */
+/*
 //Lec 22
 Route::get('teachers', [TeachersController::class, 'index']); 
 //Lec 23
@@ -81,3 +82,12 @@ Route::get('add-teachers', [TeachersController::class, 'add']);
 Route::get('show-teachers/{id}', [TeachersController::class, 'show']); 
 Route::get('update-teachers/{id}', [TeachersController::class, 'update']); 
 Route::get('delete-teachers/{id}', [TeachersController::class, 'delete']); 
+*/
+//Lec 27
+Route::get('add-data', [StudentController::class, 'addData']); 
+//Lec 28
+Route::get('get-data', [StudentController::class, 'getData']); 
+//Lec 29
+Route::get('update-data', [StudentController::class, 'updateData']); 
+//Lec 30
+Route::get('delete-data', [StudentController::class, 'deleteData']); 
