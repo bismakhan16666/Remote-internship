@@ -93,6 +93,7 @@ class StudentController extends Controller
             //Lec 34
         $items=Student :: find(23);
         $items-> name ='Updated Name';
+         $items->save();
 
         return 'Updated Successfully';
     } 
