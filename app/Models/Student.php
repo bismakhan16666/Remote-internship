@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Student extends Model
 {
     use HasFactory;
-//Lec 31
+
     protected $fillable = [
         'name',
         'email',
@@ -16,6 +16,23 @@ class Student extends Model
         'date_of_birth',
         'gender',
         'user_id',
-        'score',  
+        'score',
+        'status',
+        'image'
     ];
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+
+    public function scopeHighScorers($query)
+    {
+        return $query->where('score', '>', 80);
+    }
+
+    public function scopeAgeGreaterThan($query, $age)
+    {
+        return $query->where('age', '>', $age);
+    }
 }

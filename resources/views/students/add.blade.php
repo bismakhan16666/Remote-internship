@@ -7,45 +7,22 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f2f5;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; }
         .header {
             background: linear-gradient(135deg, #1a1a2e, #16213e);
             color: white;
             padding: 20px 0;
             box-shadow: 0 2px 15px rgba(0,0,0,0.3);
         }
-
-        .header h1 {
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: 1px;
-        }
-
-        .header h1 span {
-            color: #f5c842;
-        }
-
-        .header .subtitle {
-            font-size: 14px;
-            color: #aaa;
-        }
-
+        .header h1 { font-size: 28px; font-weight: 700; letter-spacing: 1px; }
+        .header h1 span { color: #f5c842; }
+        .header .subtitle { font-size: 14px; color: #aaa; }
         .nav-bar {
             background: #16213e;
             padding: 12px 0;
             border-bottom: 3px solid #f5c842;
         }
-
         .nav-bar a {
             color: white;
             text-decoration: none;
@@ -54,30 +31,15 @@
             transition: 0.3s;
             border-radius: 5px;
         }
-
-        .nav-bar a:hover {
-            background: #f5c842;
-            color: #1a1a2e;
-        }
-
-        .nav-bar a.active {
-            background: #f5c842;
-            color: #1a1a2e;
-        }
-
-        .container-custom {
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-
+        .nav-bar a:hover { background: #f5c842; color: #1a1a2e; }
+        .nav-bar a.active { background: #f5c842; color: #1a1a2e; }
+        .container-custom { max-width: 800px; margin: 40px auto; padding: 0 20px; }
         .form-card {
             background: white;
             border-radius: 15px;
             padding: 35px;
             box-shadow: 0 5px 30px rgba(0,0,0,0.1);
         }
-
         .form-card h2 {
             color: #1a1a2e;
             font-weight: 700;
@@ -85,30 +47,23 @@
             border-bottom: 3px solid #f5c842;
             padding-bottom: 15px;
         }
-
-        .form-card .subtitle {
-            color: #666;
-            margin-bottom: 25px;
-            font-size: 14px;
-        }
-
-        .form-label {
-            font-weight: 600;
-            color: #1a1a2e;
-        }
-
+        .form-card .subtitle { color: #666; margin-bottom: 25px; font-size: 14px; }
+        .form-label { font-weight: 600; color: #1a1a2e; }
         .form-control, .form-select {
             border-radius: 8px;
             border: 2px solid #e0e0e0;
             padding: 12px 15px;
             transition: 0.3s;
         }
-
         .form-control:focus, .form-select:focus {
             border-color: #f5c842;
             box-shadow: 0 0 0 3px rgba(245, 200, 66, 0.2);
         }
-
+        .form-control.is-invalid, .form-select.is-invalid {
+            border-color: #e74a3b;
+            box-shadow: 0 0 0 3px rgba(231, 74, 59, 0.2);
+        }
+        .invalid-feedback { color: #e74a3b; font-size: 13px; margin-top: 5px; }
         .btn-submit {
             background: #1a1a2e;
             color: white;
@@ -119,14 +74,12 @@
             font-size: 16px;
             transition: 0.3s;
         }
-
         .btn-submit:hover {
             background: #f5c842;
             color: #1a1a2e;
             transform: translateY(-2px);
             box-shadow: 0 5px 20px rgba(245, 200, 66, 0.4);
         }
-
         .btn-back {
             background: #6c757d;
             color: white;
@@ -137,17 +90,8 @@
             text-decoration: none;
             transition: 0.3s;
         }
-
-        .btn-back:hover {
-            background: #5a6268;
-            color: white;
-        }
-
-        .alert-danger {
-            border-radius: 8px;
-            border-left: 5px solid #e74a3b;
-        }
-
+        .btn-back:hover { background: #5a6268; color: white; }
+        .alert-danger { border-radius: 8px; border-left: 5px solid #e74a3b; }
         .footer {
             background: #1a1a2e;
             color: white;
@@ -155,11 +99,9 @@
             padding: 25px 0;
             margin-top: 40px;
         }
-
-        .footer a {
-            color: #f5c842;
-            text-decoration: none;
-        }
+        .footer a { color: #f5c842; text-decoration: none; }
+        .text-danger { font-size: 12px; margin-top: 5px; }
+        .text-muted { font-size: 12px; color: #6c757d; }
     </style>
 </head>
 <body>
@@ -203,56 +145,92 @@
                 </div>
             @endif
 
-            <form action="{{ route('students.store') }}" method="POST">
+            <form action="{{ route('students.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">Full Name *</label>
-                        <input type="text" name="name" class="form-control" placeholder="Enter full name" value="{{ old('name') }}" required>
+                        <label class="form-label">Full Name <span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" 
+                               placeholder="Enter full name" value="{{ old('name') }}" required>
+                        @error('name')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">Email Address *</label>
-                        <input type="email" name="email" class="form-control" placeholder="Enter email address" value="{{ old('email') }}" required>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Age *</label>
-                        <input type="number" name="age" class="form-control" placeholder="Enter age" value="{{ old('age') }}" required>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Date of Birth *</label>
-                        <input type="date" name="date_of_birth" class="form-control" value="{{ old('date_of_birth') }}" required>
+                        <label class="form-label">Email Address <span class="text-danger">*</span></label>
+                        <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" 
+                               placeholder="Enter email address" value="{{ old('email') }}" required>
+                        @error('email')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">Gender *</label>
-                        <select name="gender" class="form-select" required>
+                        <label class="form-label">Age <span class="text-danger">*</span></label>
+                        <input type="number" name="age" class="form-control @error('age') is-invalid @enderror" 
+                               placeholder="Enter age" value="{{ old('age') }}" required>
+                        @error('age')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Date of Birth <span class="text-danger">*</span></label>
+                        <input type="date" name="date_of_birth" class="form-control @error('date_of_birth') is-invalid @enderror" 
+                               value="{{ old('date_of_birth') }}" required>
+                        @error('date_of_birth')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Gender <span class="text-danger">*</span></label>
+                        <select name="gender" class="form-select @error('gender') is-invalid @enderror" required>
                             <option value="">Select Gender</option>
                             <option value="m" {{ old('gender') == 'm' ? 'selected' : '' }}>Male</option>
                             <option value="f" {{ old('gender') == 'f' ? 'selected' : '' }}>Female</option>
                         </select>
+                        @error('gender')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Score</label>
-                        <input type="number" name="score" class="form-control" placeholder="Enter score (0-100)" value="{{ old('score') }}">
+                        <input type="number" name="score" class="form-control @error('score') is-invalid @enderror" 
+                               placeholder="Enter score (0-100)" value="{{ old('score') }}">
+                        @error('score')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Status *</label>
-                    <select name="status" class="form-select" required>
+                    <label class="form-label">Status <span class="text-danger">*</span></label>
+                    <select name="status" class="form-select @error('status') is-invalid @enderror" required>
                         <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>Active</option>
                         <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
                         <option value="pending" {{ old('status') == 'pending' ? 'selected' : '' }}>Pending</option>
                     </select>
+                    @error('status')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- ✅ Image Upload -->
+                <div class="mb-3">
+                    <label class="form-label">Profile Image</label>
+                    <input type="file" name="image" class="form-control @error('image') is-invalid @enderror" accept="image/*">
+                    @error('image')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                    <small class="text-muted">Allowed: jpeg, png, jpg, gif | Max: 2MB</small>
                 </div>
 
                 <div class="d-flex gap-3 mt-4">

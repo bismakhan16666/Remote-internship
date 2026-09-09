@@ -1,29 +1,24 @@
 <?php
-use App\Http\Controllers\StudentController; //Lec13 Create Controller
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\StudentController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\ThirdTestController;
-use App\Models\Teachers;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\TeachersController;// Lec 22
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
 */
-
-//Lec:5 Router Explained
-
-Route::get('/', function () {
-    return'Welcome To The Laravel Student Management';
+Route::get('test-view', function () {
+    return view('students.add');
 });
-/*
-//Lec:6 Route Grouping and naming 
+// Lec:5 Router Explained
+Route::get('/', function () {
+    return 'Welcome To The Laravel Student Management';
+});
 
+// Lec:6 Route Grouping and naming 
 Route::prefix('details')->group(function(){
   Route::get('students', function () {
     return'This Page Is For Students Detail';
@@ -33,61 +28,58 @@ Route::prefix('details')->group(function(){
   })->name('Teachers-Detail');  
 });
 
-//Lec:7 Route Parameters & Fallback
-
+// Lec:7 Route Parameters & Fallback
 Route::get('student/{id}/{reg}', function ($id,$reg) {
-    return'Student Id is ' . $id . 'Student Registeration is ' . $reg;
+    return'Student Id is ' . $id . 'Student Registration is ' . $reg;
 });
 Route::fallback(function () {
     return'The Page Is Not found Please Try Again';
 });
 
-//Lec:8 View Explined
-
+// Lec:8 View Explained
 Route::get('about-us', function () {
-    $name="Tester";  //Lec:9 Passing Data fron route to view
+    $name="Tester";
     $email="tester@gmail.com";
     return view('aboutus')->with('name' , $name)->with('email' , $email);
 });
 Route::view('contact-us', 'contactus' , ['name' => 'Tester' , 'email' => 'tester@gmail.com']);
 
-//Lec:10 Blade directives
-
+// Lec:10 Blade directives
 Route::post('contact-us', function () {
     return back()->with('success', 'Your message has been sent successfully!');
 });
 
-//Lec13 Create Controller
-
-Route::controller(StudentController::class)->group (function(){
+// Lec:13 Create Controller
+Route::controller(StudentController::class)->group(function(){
 Route::get('students','index');
-Route::get('about-us/{id}/{name}','aboutUs'); //Lec 14  Passing Route Data to Controllers
+Route::get('about-us/{id}/{name}','aboutUs');
 });
 
-//Lec16 Create Controller
+// Lec:16 Create Controller
 Route::get('invoke', TestController::class);
 Route::resource('Third-Test', ThirdTestController::class);
-*/
-//Lec 22
-/*
-Route::get('teachers', function (){
-    return Teachers::all();
-}) ;
- */
-/*
-//Lec 22
-Route::get('teachers', [TeachersController::class, 'index']); 
-//Lec 23
-Route::get('add-teachers', [TeachersController::class, 'add']); 
-Route::get('show-teachers/{id}', [TeachersController::class, 'show']); 
-Route::get('update-teachers/{id}', [TeachersController::class, 'update']); 
-Route::get('delete-teachers/{id}', [TeachersController::class, 'delete']); 
-*/
-//Lec 27
-Route::get('add-data', [StudentController::class, 'addData']); 
-//Lec 28
-Route::get('get-data', [StudentController::class, 'getData']); 
-//Lec 29
-Route::get('update-data', [StudentController::class, 'updateData']); 
-//Lec 30
-Route::get('delete-data', [StudentController::class, 'deleteData']); 
+
+// ============================================
+//  COMPLETE CRUD ROUTES
+// ============================================
+
+// Dashboard - Read all students
+Route::get('/', [StudentController::class, 'index'])->name('students.index');
+
+// Show Add Form - Create
+Route::get('add-student', [StudentController::class, 'showAddForm'])->name('students.create');
+
+// Store Student - Create
+Route::post('add-student', [StudentController::class, 'storeStudent'])->name('students.store');
+
+// Show Edit Form - Update
+Route::get('edit-student/{id}', [StudentController::class, 'showEditForm'])->name('students.edit');
+
+// Update Student - Update
+Route::put('edit-student/{id}', [StudentController::class, 'updateStudent'])->name('students.update');
+
+// Delete Student - Delete
+Route::delete('delete-student/{id}', [StudentController::class, 'deleteStudent'])->name('students.delete');
+
+// Search with filters - Read
+Route::get('/search', [StudentController::class, 'search'])->name('students.search');
