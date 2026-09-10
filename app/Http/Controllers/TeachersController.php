@@ -3,43 +3,97 @@
 namespace App\Http\Controllers;
 
 use App\Models\Teachers;
+use App\Models\Classes;
+use App\Models\Student;
+use App\Models\Subject;
+use App\Models\Comment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
-class TeachersController extends Controller
+class TeacherController extends Controller
 {
-    //Lec 22
-   public function index()
+    // ============================================
+    // ✅ TEACHER DASHBOARD
+    // ============================================
+    public function dashboard()
     {
-        return Teachers::all();
-    } 
-    public function add()
-    {
-        //Lec23 Understanding Invoke & Resource Controllers
-        $items=new Teachers();
-        $items->name='Test Name';
-        $items->save();
+        $user = Auth::user();
+        
+        // Teacher record find karein
+        $teacher = Teachers::where('user_id', $user->id)
+                           ->orWhere('name', $user->name)
+                           ->with([
+                               'classes.students',      // Classes + Students
+                               'classes.subjects',      // Classes + Subjects
+                               'comments'               // Comments on teacher
+                           ])
+                           ->first();
 
-        Return'Added Successfully';
+        if (!$teacher) {
+            return redirect('/home')->with('error', 'No teacher record found. Contact admin.');
         }
-    public function show($id)
-    {
-        //
-        $items=Teachers::findOrfail($id);
-        return $items;
+
+        // Stats
+        $totalClasses = $teacher->classes->count();
+        $totalStudents = Student::whereIn('class_id', $teacher->classes->pluck('id'))->count();
+        $totalSubjects = Subject::whereHas('classes', function($q) use ($teacher) {
+            $q->whereIn('classes.id', $teacher->classes->pluck('id'));
+        })->count();
+
+        // Students list (with class info)
+        $students = Student::whereIn('class_id', $teacher->classes->pluck('id'))
+                           ->with(['classes', 'subjects'])
+                           ->paginate(10);
+
+        return view('teachers.dashboard', compact(
+            'teacher',
+            'totalClasses',
+            'totalStudents',
+            'totalSubjects',
+            'students'
+        ));
     }
-    public function update($id)
+
+    // ============================================
+    // ✅ SHOW CLASS DETAILS (Teacher's Class)
+    // ============================================
+    public function showClass($id)
     {
-        //
-        $items=Teachers::findOrfail($id);
-        $items->name='Updated Teacher';
-        $items->update();
-        return'Updated Successfully';
+        $class = Classes::with(['students', 'subjects', 'teacher'])->findOrFail($id);
+
+        return view('teachers.class-details', compact('class'));
     }
-    public function delete($id)
+
+    // ============================================
+    // ✅ SHOW STUDENT DETAILS (Teacher's Student)
+    // ============================================
+    public function showStudent($id)
     {
-        //
-        $items=Teachers::findOrfail($id);
-        $items->delete();
-        return'Deleted Successfully';
+        $student = Student::with([
+            'classes',
+            'subjects',
+            'grades.subject',
+            'comments'
+        ])->findOrFail($id);
+
+        return view('teachers.student-details', compact('student'));
+    }
+
+    // ============================================
+    // ✅ ADD COMMENT/REMARK TO STUDENT
+    // ============================================
+    public function addComment(Request $request, $studentId)
+    {
+        $request->validate([
+            'comment' => 'required|string|max:1000'
+        ]);
+
+        $student = Student::findOrFail($studentId);
+        
+        $student->comments()->create([
+            'comment' => $request->comment,
+        ]);
+
+        return redirect()->back()->with('success', 'Remark added successfully!');
     }
 }

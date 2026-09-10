@@ -3,12 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Student</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Add Student - Student Management System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+        }
         .header {
             background: linear-gradient(135deg, #1a1a2e, #16213e);
             color: white;
@@ -151,40 +156,28 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Full Name <span class="text-danger">*</span></label>
-                        <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" 
-                               placeholder="Enter full name" value="{{ old('name') }}" required>
-                        @error('name')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" placeholder="Enter full name" value="{{ old('name') }}" required>
+                        @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Email Address <span class="text-danger">*</span></label>
-                        <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" 
-                               placeholder="Enter email address" value="{{ old('email') }}" required>
-                        @error('email')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" placeholder="Enter email address" value="{{ old('email') }}" required>
+                        @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Age <span class="text-danger">*</span></label>
-                        <input type="number" name="age" class="form-control @error('age') is-invalid @enderror" 
-                               placeholder="Enter age" value="{{ old('age') }}" required>
-                        @error('age')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        <input type="number" name="age" class="form-control @error('age') is-invalid @enderror" placeholder="Enter age" value="{{ old('age') }}" required>
+                        @error('age')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Date of Birth <span class="text-danger">*</span></label>
-                        <input type="date" name="date_of_birth" class="form-control @error('date_of_birth') is-invalid @enderror" 
-                               value="{{ old('date_of_birth') }}" required>
-                        @error('date_of_birth')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        <input type="date" name="date_of_birth" class="form-control @error('date_of_birth') is-invalid @enderror" value="{{ old('date_of_birth') }}" required>
+                        @error('date_of_birth')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                 </div>
 
@@ -196,18 +189,13 @@
                             <option value="m" {{ old('gender') == 'm' ? 'selected' : '' }}>Male</option>
                             <option value="f" {{ old('gender') == 'f' ? 'selected' : '' }}>Female</option>
                         </select>
-                        @error('gender')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        @error('gender')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Score</label>
-                        <input type="number" name="score" class="form-control @error('score') is-invalid @enderror" 
-                               placeholder="Enter score (0-100)" value="{{ old('score') }}">
-                        @error('score')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        <input type="number" name="score" class="form-control @error('score') is-invalid @enderror" placeholder="Enter score (0-100)" value="{{ old('score') }}">
+                        @error('score')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                 </div>
 
@@ -218,18 +206,13 @@
                         <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
                         <option value="pending" {{ old('status') == 'pending' ? 'selected' : '' }}>Pending</option>
                     </select>
-                    @error('status')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                    @error('status')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
-                <!-- ✅ Image Upload -->
                 <div class="mb-3">
                     <label class="form-label">Profile Image</label>
                     <input type="file" name="image" class="form-control @error('image') is-invalid @enderror" accept="image/*">
-                    @error('image')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                    @error('image')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     <small class="text-muted">Allowed: jpeg, png, jpg, gif | Max: 2MB</small>
                 </div>
 
@@ -245,10 +228,6 @@
     <div class="footer">
         <div class="container">
             <p>&copy; 2026 Student Management System. All Rights Reserved.</p>
-            <p>
-                <a href="#">About Us</a> |
-                <a href="#">Contact Us</a>
-            </p>
         </div>
     </div>
 

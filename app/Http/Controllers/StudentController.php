@@ -5,14 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Student;
 use App\Http\Requests\StudentRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class StudentController extends Controller
 {
     // ============================================
-    // READ - Show all students with pagination
+    // ✅ ADMIN DASHBOARD - All Students (with pagination)
     // ============================================
-    public function index()
+    public function adminIndex()
     {
         $students = Student::paginate(10);
         
@@ -31,6 +32,32 @@ class StudentController extends Controller
     }
 
     // ============================================
+    // ✅ STUDENT DASHBOARD - Sirf apna data
+    // ============================================
+    public function studentDashboard()
+    {
+        $user = Auth::user();
+        
+        // Student record find karein (by user_id ya by email)
+        $student = Student::where('user_id', $user->id)
+                          ->orWhere('email', $user->email)
+                          ->with([
+                              'classes.subjects',   // Enrolled Courses
+                              'classes.teacher',    // Class Teacher
+                              'subjects',           // Subjects + Grades
+                              'grades.subject',     // Grades
+                              'comments'            // Teacher Remarks
+                          ])
+                          ->first();
+
+        if (!$student) {
+            return redirect('/home')->with('error', 'No student record found. Contact admin.');
+        }
+
+        return view('students.dashboard', compact('student'));
+    }
+
+    // ============================================
     // CREATE - Show Add Form
     // ============================================
     public function showAddForm()
@@ -39,11 +66,10 @@ class StudentController extends Controller
     }
 
     // ============================================
-    // CREATE - Store Student with Image Upload
+    // CREATE - Store Student
     // ============================================
     public function storeStudent(StudentRequest $request)
     {
-        // Image Upload Logic
         $imagePath = null;
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('students', 'public');
@@ -79,7 +105,7 @@ class StudentController extends Controller
     }
 
     // ============================================
-    // UPDATE - Update Student with Image Upload
+    // UPDATE - Update Student
     // ============================================
     public function updateStudent(StudentRequest $request, $id)
     {
@@ -89,10 +115,8 @@ class StudentController extends Controller
             return redirect()->route('students.index')->with('error', 'Student not found!');
         }
 
-        // Image Upload Logic
         $imagePath = $student->image;
         if ($request->hasFile('image')) {
-            // Delete old image if exists
             if ($student->image && Storage::disk('public')->exists($student->image)) {
                 Storage::disk('public')->delete($student->image);
             }
@@ -114,7 +138,7 @@ class StudentController extends Controller
     }
 
     // ============================================
-    // DELETE - Delete Student with Image
+    // DELETE - Delete Student
     // ============================================
     public function deleteStudent($id)
     {
@@ -124,7 +148,6 @@ class StudentController extends Controller
             return redirect()->route('students.index')->with('error', 'Student not found!');
         }
 
-        // Delete image from storage
         if ($student->image && Storage::disk('public')->exists($student->image)) {
             Storage::disk('public')->delete($student->image);
         }
@@ -135,7 +158,7 @@ class StudentController extends Controller
     }
 
     // ============================================
-    // SEARCH - Search with filters
+    // SEARCH - Filters
     // ============================================
     public function search(Request $request)
     {
@@ -144,31 +167,24 @@ class StudentController extends Controller
         if ($request->filled('name')) {
             $query->where('name', 'like', '%' . $request->name . '%');
         }
-
         if ($request->filled('email')) {
             $query->where('email', 'like', '%' . $request->email . '%');
         }
-
         if ($request->filled('gender')) {
             $query->where('gender', $request->gender);
         }
-
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-
         if ($request->filled('min_score')) {
             $query->where('score', '>=', $request->min_score);
         }
-
         if ($request->filled('max_score')) {
             $query->where('score', '<=', $request->max_score);
         }
-
         if ($request->filled('min_age')) {
             $query->where('age', '>=', $request->min_age);
         }
-
         if ($request->filled('max_age')) {
             $query->where('age', '<=', $request->max_age);
         }
