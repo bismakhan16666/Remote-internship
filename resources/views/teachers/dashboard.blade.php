@@ -7,7 +7,6 @@
 <style>
     .dashboard-container { max-width: 1300px; margin: 30px auto; padding: 0 20px; }
 
-    /* Profile Card */
     .profile-card {
         background: white;
         border-radius: 15px;
@@ -37,7 +36,6 @@
         font-weight: 600;
     }
 
-    /* Stat Boxes */
     .stat-box {
         text-align: center;
         padding: 25px;
@@ -51,7 +49,6 @@
     .stat-box .stat-number { font-size: 32px; font-weight: 700; }
     .stat-box .stat-label  { font-size: 14px; opacity: 0.9; margin-top: 5px; }
 
-    /* Info Boxes */
     .info-box {
         background: #f8f9fc;
         border-radius: 10px;
@@ -66,13 +63,8 @@
         margin-bottom: 3px;
         display: block;
     }
-    .info-box .value {
-        font-weight: 600;
-        color: #1a1a2e;
-        font-size: 16px;
-    }
+    .info-box .value { font-weight: 600; color: #1a1a2e; font-size: 16px; }
 
-    /* Cards */
     .card-custom {
         background: white;
         border-radius: 15px;
@@ -87,17 +79,12 @@
         padding-bottom: 12px;
         margin-bottom: 20px;
     }
-
-    /* Tables */
     .table-custom thead th {
         font-weight: 600;
         color: #4a4a4a;
         background: #f8f9fc;
         border-bottom: 2px solid #e3e6f0;
     }
-    .table-custom tbody td { vertical-align: middle; padding: 12px; }
-
-    /* Class Cards */
     .class-card {
         background: linear-gradient(135deg, #1a1a2e, #16213e);
         color: white;
@@ -113,30 +100,16 @@
     }
     .class-card h5 { color: #f5c842; font-weight: 700; margin-bottom: 10px; }
     .class-card p { margin-bottom: 5px; font-size: 14px; opacity: 0.9; }
-
-    /* Badges */
     .badge-success { background: #d4edda; color: #155724; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
     .badge-warning { background: #fff3cd; color: #856404; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
     .badge-danger  { background: #f8d7da; color: #721c24; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-    .badge-info    { background: #d1ecf1; color: #0c5460; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-
-    /* Comment Cards */
-    .comment-card {
-        background: #f8f9fc;
-        border-left: 4px solid #f5c842;
-        padding: 15px;
-        border-radius: 8px;
-        margin-bottom: 10px;
-    }
-    .comment-card p { margin: 0 0 5px; color: #1a1a2e; }
-    .comment-card small { color: #999; }
 </style>
 @endsection
 
 @section('content')
 <div class="dashboard-container">
 
-    <!-- Profile Card -->
+    <!-- Profile -->
     <div class="profile-card">
         <div class="row align-items-center">
             <div class="col-md-2 text-center">
@@ -156,9 +129,7 @@
             <div class="col-md-4 text-end">
                 <div class="info-box">
                     <label>Total Classes</label>
-                    <div class="value" style="font-size: 26px; color: #1cc88a;">
-                        {{ $totalClasses }}
-                    </div>
+                    <div class="value" style="font-size: 26px; color: #1cc88a;">{{ $totalClasses }}</div>
                 </div>
             </div>
         </div>
@@ -252,8 +223,6 @@
                     @endforeach
                 </tbody>
             </table>
-
-            <!-- Pagination -->
             <div class="d-flex justify-content-end mt-3">
                 {{ $students->links() }}
             </div>

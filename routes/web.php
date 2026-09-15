@@ -9,43 +9,36 @@ use Illuminate\Support\Facades\Auth;
 |--------------------------------------------------------------------------
 */
 
-// ✅ Auth Routes
+//  Auth Routes
 Auth::routes();
 
-// ✅ Root URL - Role-based redirect
+//  Logout Confirmation
+Route::get('/logout-confirm', function () {
+    return view('auth.logout');
+})->middleware('auth')->name('logout.confirm');
+
+//  Root URL
 Route::get('/', function () {
     if (Auth::check()) {
         $user = Auth::user();
-        if ($user->user_type === 'admin') {
-            return redirect('/students');
-        } elseif ($user->user_type === 'teacher') {
-            return redirect('/teacher/dashboard');
-        } elseif ($user->user_type === 'student') {
-            return redirect('/student/dashboard');
-        }
+        if ($user->user_type === 'admin') return redirect('/students');
+        elseif ($user->user_type === 'teacher') return redirect('/teacher/dashboard');
+        elseif ($user->user_type === 'student') return redirect('/student/dashboard');
     }
     return redirect('/login');
 });
 
-// ✅ Home (fallback)
+//  Home
 Route::get('/home', function () {
-    if (!Auth::check()) {
-        return redirect('/login');
-    }
-    
+    if (!Auth::check()) return redirect('/login');
     $user = Auth::user();
-    if ($user->user_type === 'admin') {
-        return redirect('/students');
-    } elseif ($user->user_type === 'teacher') {
-        return redirect('/teacher/dashboard');
-    } elseif ($user->user_type === 'student') {
-        return redirect('/student/dashboard');
-    }
-    
+    if ($user->user_type === 'admin') return redirect('/students');
+    elseif ($user->user_type === 'teacher') return redirect('/teacher/dashboard');
+    elseif ($user->user_type === 'student') return redirect('/student/dashboard');
     return 'Welcome!';
 })->name('home');
 
-// ✅ Authenticated Routes
+//  Authenticated Routes
 Route::middleware(['auth'])->group(function () {
 
     // ============================================
@@ -55,20 +48,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/dashboard', 'StudentController@adminIndex')->name('admin.dashboard');
 
     // ============================================
-    // TEACHER DASHBOARD ✅ NAYA
-    // ============================================
-    Route::get('/teacher/dashboard', 'TeacherController@dashboard')->name('teacher.dashboard');
-    Route::get('/teacher/class/{id}', 'TeacherController@showClass')->name('teacher.class');
-    Route::get('/teacher/student/{id}', 'TeacherController@showStudent')->name('teacher.student');
-    Route::post('/teacher/student/{id}/comment', 'TeacherController@addComment')->name('teacher.comment');
-
-    // ============================================
-    // STUDENT DASHBOARD
-    // ============================================
-    Route::get('/student/dashboard', 'StudentController@studentDashboard')->name('student.dashboard');
-
-    // ============================================
-    // STUDENT CRUD (Admin)
+    // STUDENT CRUD
     // ============================================
     Route::get('add-student', 'StudentController@showAddForm')->name('students.create');
     Route::post('add-student', 'StudentController@storeStudent')->name('students.store');
@@ -78,34 +58,35 @@ Route::middleware(['auth'])->group(function () {
     Route::get('search', 'StudentController@search')->name('students.search');
 
     // ============================================
+    // TEACHER CRUD
+    // ============================================
+    Route::get('add-teacher', 'TeachersController@create')->name('teachers.create');
+    Route::post('add-teacher', 'TeachersController@store')->name('teachers.store');
+    Route::get('edit-teacher/{id}', 'TeachersController@edit')->name('teachers.edit');
+    Route::put('edit-teacher/{id}', 'TeachersController@update')->name('teachers.update');
+    Route::delete('delete-teacher/{id}', 'TeachersController@destroy')->name('teachers.delete');
+
+    // ============================================
+    // TEACHER DASHBOARD + ROUTES
+    // ============================================
+    Route::get('/teacher/dashboard', 'TeachersController@dashboard')->name('teacher.dashboard');
+    Route::get('/teacher/students', 'TeachersController@myStudents')->name('teacher.students');
+    Route::get('/teacher/class/{id}', 'TeachersController@showClass')->name('teacher.class');
+    Route::get('/teacher/student/{id}', 'TeachersController@showStudent')->name('teacher.student');
+    Route::post('/teacher/student/{id}/comment', 'TeachersController@addComment')->name('teacher.comment');
+
+    // ============================================
+    // STUDENT DASHBOARD
+    // ============================================
+    Route::get('/student/dashboard', 'StudentController@studentDashboard')->name('student.dashboard');
+
+    // ============================================
     // STATS
     // ============================================
     Route::get('stats/dashboard', 'StatsController@dashboard')->name('stats.dashboard');
-    Route::get('stats/basic', 'StatsController@basicAggregates')->name('stats.basic');
-    Route::get('stats/relationships', 'StatsController@relationshipCounts')->name('stats.relationships');
-    Route::get('stats/advanced', 'StatsController@advancedAggregates')->name('stats.advanced');
-
-    // ============================================
-    // RELATIONSHIPS
-    // ============================================
-    Route::get('/has-one-through', 'RelationshipController@hasOneThrough');
-    Route::get('/has-many-through', 'RelationshipController@hasManyThrough');
-    Route::get('/users-with-class-count', 'RelationshipController@allUsersWithClassCount');
-
-    // ============================================
-    // COMMENTS (Student)
-    // ============================================
-    Route::post('student/{id}/comment', 'CommentController@addStudentComment')->name('students.comment');
-    Route::get('comment/{id}', 'CommentController@show');
 });
 
-// Public Routes
-Route::get('about-us', function () {
-    return view('aboutus');
-});
-
-Route::view('contact-us', 'contactus');
-
+// Fallback
 Route::fallback(function () {
     return 'The Page Is Not Found. Please Try Again';
 });

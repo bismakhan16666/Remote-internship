@@ -12,7 +12,7 @@ class LoginController extends Controller
     use AuthenticatesUsers;
 
     /**
-     * ✅ Role-based redirect after login
+     * ✅ Login ke baad role-based redirect
      */
     protected function redirectTo()
     {
@@ -27,18 +27,6 @@ class LoginController extends Controller
         }
 
         return '/home';
-    }
-
-    /**
-     *  Role match check at login
-     */
-    protected function credentials(Request $request)
-    {
-        return [
-            'email' => $request->email,
-            'password' => $request->password,
-            'user_type' => $request->user_type,
-        ];
     }
 
     public function __construct()

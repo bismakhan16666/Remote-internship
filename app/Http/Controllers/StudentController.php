@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Student;
+use App\Models\Teachers;
+use App\Models\Classes;
+use App\Models\Subject;
 use App\Http\Requests\StudentRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,63 +14,55 @@ use Illuminate\Support\Facades\Storage;
 class StudentController extends Controller
 {
     // ============================================
-    // ✅ ADMIN DASHBOARD - All Students (with pagination)
+    //  ADMIN DASHBOARD - Students + Teachers + Stats
     // ============================================
     public function adminIndex()
     {
-        $students = Student::paginate(10);
+        $students = Student::with(['classes', 'user'])
+                           ->paginate(10, ['*'], 'students_page');
         
+        $teachers = Teachers::with(['user', 'classes'])
+                            ->paginate(10, ['*'], 'teachers_page');
+
+        // Stats
         $totalStudents = Student::count();
         $activeStudents = Student::where('status', 'active')->count();
         $inactiveStudents = Student::where('status', 'inactive')->count();
         $pendingStudents = Student::where('status', 'pending')->count();
+        $totalTeachers = Teachers::count();
+        $totalClasses = Classes::count();
+        $totalSubjects = Subject::count();
 
         return view('students.index', compact(
-            'students', 
-            'totalStudents', 
-            'activeStudents', 
-            'inactiveStudents', 
-            'pendingStudents'
+            'students', 'teachers',
+            'totalStudents', 'activeStudents', 'inactiveStudents', 'pendingStudents',
+            'totalTeachers', 'totalClasses', 'totalSubjects'
         ));
     }
 
-    // ============================================
-    // ✅ STUDENT DASHBOARD - Sirf apna data
-    // ============================================
+    // Student Dashboard
     public function studentDashboard()
     {
         $user = Auth::user();
-        
-        // Student record find karein (by user_id ya by email)
         $student = Student::where('user_id', $user->id)
                           ->orWhere('email', $user->email)
-                          ->with([
-                              'classes.subjects',   // Enrolled Courses
-                              'classes.teacher',    // Class Teacher
-                              'subjects',           // Subjects + Grades
-                              'grades.subject',     // Grades
-                              'comments'            // Teacher Remarks
-                          ])
+                          ->with(['classes.subjects', 'classes.teacher', 'subjects', 'grades.subject', 'comments'])
                           ->first();
 
         if (!$student) {
-            return redirect('/home')->with('error', 'No student record found. Contact admin.');
+            return redirect('/home')->with('error', 'No student record found.');
         }
 
         return view('students.dashboard', compact('student'));
     }
 
-    // ============================================
-    // CREATE - Show Add Form
-    // ============================================
+    // Show Add Form
     public function showAddForm()
     {
         return view('students.add');
     }
 
-    // ============================================
-    // CREATE - Store Student
-    // ============================================
+    // Store Student
     public function storeStudent(StudentRequest $request)
     {
         $imagePath = null;
@@ -87,33 +82,22 @@ class StudentController extends Controller
             'image' => $imagePath
         ]);
 
-        return redirect()->route('students.index')->with('success', 'Student Added Successfully!');
+        return redirect()->route('students.index')->with('success', 'Student Added!');
     }
 
-    // ============================================
-    // UPDATE - Show Edit Form
-    // ============================================
+    // Show Edit Form
     public function showEditForm($id)
     {
         $student = Student::find($id);
-        
-        if (!$student) {
-            return redirect()->route('students.index')->with('error', 'Student not found!');
-        }
-        
+        if (!$student) return redirect()->route('students.index')->with('error', 'Not found!');
         return view('students.edit', compact('student'));
     }
 
-    // ============================================
-    // UPDATE - Update Student
-    // ============================================
+    // Update Student
     public function updateStudent(StudentRequest $request, $id)
     {
         $student = Student::find($id);
-        
-        if (!$student) {
-            return redirect()->route('students.index')->with('error', 'Student not found!');
-        }
+        if (!$student) return redirect()->route('students.index')->with('error', 'Not found!');
 
         $imagePath = $student->image;
         if ($request->hasFile('image')) {
@@ -134,75 +118,48 @@ class StudentController extends Controller
             'image' => $imagePath
         ]);
 
-        return redirect()->route('students.index')->with('success', 'Student Updated Successfully!');
+        return redirect()->route('students.index')->with('success', 'Student Updated!');
     }
 
-    // ============================================
-    // DELETE - Delete Student
-    // ============================================
+    // Delete Student
     public function deleteStudent($id)
     {
         $student = Student::find($id);
-        
-        if (!$student) {
-            return redirect()->route('students.index')->with('error', 'Student not found!');
-        }
+        if (!$student) return redirect()->route('students.index')->with('error', 'Not found!');
 
         if ($student->image && Storage::disk('public')->exists($student->image)) {
             Storage::disk('public')->delete($student->image);
         }
 
         $student->delete();
-
-        return redirect()->route('students.index')->with('success', 'Student Deleted Successfully!');
+        return redirect()->route('students.index')->with('success', 'Student Deleted!');
     }
 
-    // ============================================
-    // SEARCH - Filters
-    // ============================================
+    // Search
     public function search(Request $request)
     {
         $query = Student::query();
 
-        if ($request->filled('name')) {
-            $query->where('name', 'like', '%' . $request->name . '%');
-        }
-        if ($request->filled('email')) {
-            $query->where('email', 'like', '%' . $request->email . '%');
-        }
-        if ($request->filled('gender')) {
-            $query->where('gender', $request->gender);
-        }
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-        if ($request->filled('min_score')) {
-            $query->where('score', '>=', $request->min_score);
-        }
-        if ($request->filled('max_score')) {
-            $query->where('score', '<=', $request->max_score);
-        }
-        if ($request->filled('min_age')) {
-            $query->where('age', '>=', $request->min_age);
-        }
-        if ($request->filled('max_age')) {
-            $query->where('age', '<=', $request->max_age);
-        }
+        if ($request->filled('name')) $query->where('name', 'like', '%' . $request->name . '%');
+        if ($request->filled('email')) $query->where('email', 'like', '%' . $request->email . '%');
+        if ($request->filled('gender')) $query->where('gender', $request->gender);
+        if ($request->filled('status')) $query->where('status', $request->status);
 
-        $students = $query->paginate(10);
-        $students->appends($request->all());
+        $students = $query->paginate(10, ['*'], 'students_page')->appends($request->all());
+        $teachers = Teachers::with(['user', 'classes'])->paginate(10, ['*'], 'teachers_page');
 
         $totalStudents = Student::count();
         $activeStudents = Student::where('status', 'active')->count();
         $inactiveStudents = Student::where('status', 'inactive')->count();
         $pendingStudents = Student::where('status', 'pending')->count();
+        $totalTeachers = Teachers::count();
+        $totalClasses = Classes::count();
+        $totalSubjects = Subject::count();
 
         return view('students.index', compact(
-            'students', 
-            'totalStudents', 
-            'activeStudents', 
-            'inactiveStudents', 
-            'pendingStudents'
+            'students', 'teachers',
+            'totalStudents', 'activeStudents', 'inactiveStudents', 'pendingStudents',
+            'totalTeachers', 'totalClasses', 'totalSubjects'
         ));
     }
 }

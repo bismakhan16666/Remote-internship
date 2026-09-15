@@ -7,6 +7,9 @@
 <style>
     .dashboard-container { max-width: 1300px; margin: 30px auto; padding: 0 20px; }
 
+    /* ============================================
+       PROFILE CARD
+    ============================================ */
     .profile-card {
         background: white;
         border-radius: 15px;
@@ -41,6 +44,27 @@
         font-size: 12px;
         font-weight: 600;
     }
+
+    /* ============================================
+       SUMMARY STATS
+    ============================================ */
+    .stat-box {
+        text-align: center;
+        padding: 20px;
+        border-radius: 12px;
+        color: white;
+        margin-bottom: 20px;
+    }
+    .stat-box.blue   { background: linear-gradient(135deg, #4e73df, #224abe); }
+    .stat-box.green  { background: linear-gradient(135deg, #1cc88a, #13855c); }
+    .stat-box.yellow { background: linear-gradient(135deg, #f6c23e, #dda20a); }
+    .stat-box.red    { background: linear-gradient(135deg, #e74a3b, #be2617); }
+    .stat-box .stat-number { font-size: 28px; font-weight: 700; }
+    .stat-box .stat-label  { font-size: 13px; opacity: 0.9; margin-top: 5px; }
+
+    /* ============================================
+       INFO BOXES
+    ============================================ */
     .info-box {
         background: #f8f9fc;
         border-radius: 10px;
@@ -60,6 +84,10 @@
         color: #1a1a2e;
         font-size: 16px;
     }
+
+    /* ============================================
+       CARDS
+    ============================================ */
     .card-custom {
         background: white;
         border-radius: 15px;
@@ -74,6 +102,10 @@
         padding-bottom: 12px;
         margin-bottom: 20px;
     }
+
+    /* ============================================
+       TABLES
+    ============================================ */
     .table-custom thead th {
         font-weight: 600;
         color: #4a4a4a;
@@ -81,9 +113,17 @@
         border-bottom: 2px solid #e3e6f0;
     }
     .table-custom tbody td { vertical-align: middle; padding: 12px; }
+
+    /* ============================================
+       BADGES
+    ============================================ */
     .badge-success { background: #d4edda; color: #155724; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
     .badge-warning { background: #fff3cd; color: #856404; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
     .badge-danger  { background: #f8d7da; color: #721c24; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+
+    /* ============================================
+       COURSE CARDS
+    ============================================ */
     .course-card {
         background: linear-gradient(135deg, #1a1a2e, #16213e);
         color: white;
@@ -99,6 +139,10 @@
     }
     .course-card h5 { color: #f5c842; font-weight: 700; margin-bottom: 10px; }
     .course-card p { margin-bottom: 5px; font-size: 14px; opacity: 0.9; }
+
+    /* ============================================
+       COMMENT CARDS
+    ============================================ */
     .comment-card {
         background: #f8f9fc;
         border-left: 4px solid #f5c842;
@@ -108,25 +152,15 @@
     }
     .comment-card p { margin: 0 0 5px; color: #1a1a2e; }
     .comment-card small { color: #999; }
-    .stat-box {
-        text-align: center;
-        padding: 20px;
-        border-radius: 12px;
-        color: white;
-    }
-    .stat-box.blue   { background: linear-gradient(135deg, #4e73df, #224abe); }
-    .stat-box.green  { background: linear-gradient(135deg, #1cc88a, #13855c); }
-    .stat-box.yellow { background: linear-gradient(135deg, #f6c23e, #dda20a); }
-    .stat-box.red    { background: linear-gradient(135deg, #e74a3b, #be2617); }
-    .stat-box .stat-number { font-size: 28px; font-weight: 700; }
-    .stat-box .stat-label  { font-size: 13px; opacity: 0.9; margin-top: 5px; }
 </style>
 @endsection
 
 @section('content')
 <div class="dashboard-container">
 
-    <!-- Profile Card -->
+    <!-- ============================================
+         PROFILE CARD
+    ============================================ -->
     <div class="profile-card">
         <div class="row align-items-center">
             <div class="col-md-2 text-center">
@@ -156,7 +190,9 @@
         </div>
     </div>
 
-    <!-- Summary Stats -->
+    <!-- ============================================
+         SUMMARY STATS
+    ============================================ -->
     <div class="row mb-4">
         <div class="col-md-3">
             <div class="stat-box blue">
@@ -185,7 +221,10 @@
     </div>
 
     <div class="row">
-        <!-- Personal Info -->
+
+        <!-- ============================================
+             PERSONAL INFORMATION
+        ============================================ -->
         <div class="col-md-6">
             <div class="card-custom">
                 <h4><i class="fas fa-user"></i> Personal Information</h4>
@@ -234,7 +273,9 @@
             </div>
         </div>
 
-        <!-- Class & Teacher -->
+        <!-- ============================================
+             CLASS & TEACHER
+        ============================================ -->
         <div class="col-md-6">
             <div class="card-custom">
                 <h4><i class="fas fa-school"></i> My Class & Teacher</h4>
@@ -263,7 +304,9 @@
         </div>
     </div>
 
-    <!-- Enrolled Courses -->
+    <!-- ============================================
+         ENROLLED COURSES
+    ============================================ -->
     @if($student->classes && $student->classes->subjects && $student->classes->subjects->count() > 0)
     <div class="card-custom">
         <h4><i class="fas fa-graduation-cap"></i> Enrolled Courses</h4>
@@ -280,7 +323,9 @@
     </div>
     @endif
 
-    <!-- Subjects & Grades -->
+    <!-- ============================================
+         SUBJECTS & GRADES
+    ============================================ -->
     <div class="card-custom">
         <h4><i class="fas fa-clipboard-list"></i> My Subjects & Grades</h4>
         @if($student->subjects && $student->subjects->count() > 0)
@@ -323,7 +368,9 @@
         @endif
     </div>
 
-    <!-- Teacher's Remarks -->
+    <!-- ============================================
+         TEACHER'S REMARKS
+    ============================================ -->
     <div class="card-custom">
         <h4><i class="fas fa-comments"></i> Teacher's Remarks</h4>
         @if($student->comments && $student->comments->count() > 0)

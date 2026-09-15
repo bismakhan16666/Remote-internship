@@ -78,15 +78,18 @@
                 <a href="{{ route('students.create') }}">
                     <i class="fas fa-user-plus"></i> Add Student
                 </a>
-                <a href="{{ route('stats.dashboard') }}">
+                <a href="{{ route('teachers.create') }}">
+                    <i class="fas fa-chalkboard-teacher"></i> Add Teacher
+                </a>
+                <a href="{{ route('stats.dashboard') }}" class="{{ request()->routeIs('stats.dashboard') ? 'active' : '' }}">
                     <i class="fas fa-chart-bar"></i> Stats
                 </a>
             @elseif(Auth::user()->user_type === 'teacher')
                 <a href="{{ route('teacher.dashboard') }}" class="{{ request()->routeIs('teacher.dashboard') ? 'active' : '' }}">
                     <i class="fas fa-home"></i> My Dashboard
                 </a>
-                <a href="{{ route('students.index') }}">
-                    <i class="fas fa-users"></i> All Students
+                <a href="{{ route('teacher.students') }}" class="{{ request()->routeIs('teacher.students') ? 'active' : '' }}">
+                    <i class="fas fa-users"></i> My Students
                 </a>
             @elseif(Auth::user()->user_type === 'student')
                 <a href="{{ route('student.dashboard') }}" class="{{ request()->routeIs('student.dashboard') ? 'active' : '' }}">
@@ -94,12 +97,13 @@
                 </a>
             @endif
 
-            <a href="{{ route('logout') }}" style="float: right;"
-               onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                <i class="fas fa-sign-out-alt"></i> Logout ({{ Auth::user()->name }})
-            </a>
-            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+            <form method="POST" action="{{ route('logout') }}" style="display: inline; float: right;">
                 @csrf
+                <button type="submit" style="background: transparent; border: none; color: white; padding: 8px 20px; font-weight: 500; cursor: pointer; border-radius: 5px; transition: 0.3s;"
+                        onmouseover="this.style.background='#f5c842'; this.style.color='#1a1a2e';"
+                        onmouseout="this.style.background='transparent'; this.style.color='white';">
+                    <i class="fas fa-sign-out-alt"></i> Logout ({{ Auth::user()->name }})
+                </button>
             </form>
         </div>
     </div>
