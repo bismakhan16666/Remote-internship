@@ -10,19 +10,8 @@ use Illuminate\Support\Facades\Route;
 
 class RouteServiceProvider extends ServiceProvider
 {
-    /**
-     * The controller namespace for the application.
-     */
-    protected $namespace = 'App\Http\Controllers';
-
-    /**
-     * The path to the "home" route for your application.
-     */
     public const HOME = '/students';
 
-    /**
-     * Define your route model bindings, pattern filters, etc.
-     */
     public function boot()
     {
         $this->configureRateLimiting();
@@ -30,18 +19,13 @@ class RouteServiceProvider extends ServiceProvider
         $this->routes(function () {
             Route::prefix('api')
                 ->middleware('api')
-                ->namespace($this->namespace)
                 ->group(base_path('routes/api.php'));
 
             Route::middleware('web')
-                ->namespace($this->namespace)
                 ->group(base_path('routes/web.php'));
         });
     }
 
-    /**
-     * Configure the rate limiters for the application.
-     */
     protected function configureRateLimiting()
     {
         RateLimiter::for('api', function (Request $request) {
