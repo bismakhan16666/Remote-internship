@@ -9,22 +9,27 @@ use App\Models\Subject;
 use App\Http\Requests\StudentRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 
 class StudentController extends Controller
 {
     // ============================================
-    //  ADMIN DASHBOARD - Students + Teachers + Stats
+    //  ADMIN DASHBOARD
     // ============================================
     public function adminIndex()
     {
+        // Sirf Admin + Teacher dekh sakte hain
+        if (!Gate::allows('view-students')) {
+            abort(403, 'You are not allowed to view students.');
+        }
+
         $students = Student::with(['classes', 'user'])
                            ->paginate(10, ['*'], 'students_page');
         
         $teachers = Teachers::with(['user', 'classes'])
                             ->paginate(10, ['*'], 'teachers_page');
 
-        // Stats
         $totalStudents = Student::count();
         $activeStudents = Student::where('status', 'active')->count();
         $inactiveStudents = Student::where('status', 'inactive')->count();
@@ -40,7 +45,9 @@ class StudentController extends Controller
         ));
     }
 
-    // Student Dashboard
+    // ============================================
+    //  STUDENT DASHBOARD
+    // ============================================
     public function studentDashboard()
     {
         $user = Auth::user();
@@ -50,21 +57,33 @@ class StudentController extends Controller
                           ->first();
 
         if (!$student) {
-            return redirect('/home')->with('error', 'No student record found.');
+            abort(404, 'No student record found. Please contact admin.');
         }
 
         return view('students.dashboard', compact('student'));
     }
 
-    // Show Add Form
+    // ============================================
+    //  SHOW ADD FORM — Sirf Admin
+    // ============================================
     public function showAddForm()
     {
+        if (!Gate::allows('manage-students')) {
+            abort(403, 'Only admin can add students.');
+        }
+
         return view('students.add');
     }
 
-    // Store Student
+    // ============================================
+    //  STORE STUDENT — Sirf Admin
+    // ============================================
     public function storeStudent(StudentRequest $request)
     {
+        if (!Gate::allows('manage-students')) {
+            abort(403, 'Only admin can add students.');
+        }
+
         $imagePath = null;
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('students', 'public');
@@ -85,17 +104,29 @@ class StudentController extends Controller
         return redirect()->route('students.index')->with('success', 'Student Added!');
     }
 
-    // Show Edit Form
+    // ============================================
+    //  SHOW EDIT FORM — Sirf Admin
+    // ============================================
     public function showEditForm($id)
     {
+        if (!Gate::allows('manage-students')) {
+            abort(403, 'Only admin can edit students.');
+        }
+
         $student = Student::find($id);
         if (!$student) return redirect()->route('students.index')->with('error', 'Not found!');
         return view('students.edit', compact('student'));
     }
 
-    // Update Student
+    // ============================================
+    //  UPDATE STUDENT — Sirf Admin
+    // ============================================
     public function updateStudent(StudentRequest $request, $id)
     {
+        if (!Gate::allows('manage-students')) {
+            abort(403, 'Only admin can edit students.');
+        }
+
         $student = Student::find($id);
         if (!$student) return redirect()->route('students.index')->with('error', 'Not found!');
 
@@ -121,9 +152,15 @@ class StudentController extends Controller
         return redirect()->route('students.index')->with('success', 'Student Updated!');
     }
 
-    // Delete Student
+    // ============================================
+    //  DELETE STUDENT — Sirf Admin
+    // ============================================
     public function deleteStudent($id)
     {
+        if (!Gate::allows('manage-students')) {
+            abort(403, 'Only admin can delete students.');
+        }
+
         $student = Student::find($id);
         if (!$student) return redirect()->route('students.index')->with('error', 'Not found!');
 
@@ -135,9 +172,15 @@ class StudentController extends Controller
         return redirect()->route('students.index')->with('success', 'Student Deleted!');
     }
 
-    // Search
+    // ============================================
+    //  SEARCH
+    // ============================================
     public function search(Request $request)
     {
+        if (!Gate::allows('view-students')) {
+            abort(403, 'You are not allowed to search students.');
+        }
+
         $query = Student::query();
 
         if ($request->filled('name')) $query->where('name', 'like', '%' . $request->name . '%');

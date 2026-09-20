@@ -141,6 +141,7 @@
                         </select>
                     </div>
 
+                    
                     <!-- Email -->
                     <div class="mb-3">
                         <label for="email" class="form-label">Email Address</label>
@@ -153,7 +154,7 @@
                         <input id="password" type="password" class="form-control" name="password" placeholder="Enter your password" required>
                     </div>
 
-                    <!-- ✅ Forgot Password Link -->
+                    <!--  Forgot Password Link -->
                     <div class="mb-3 text-end">
                         @if (Route::has('password.request'))
                             <a href="{{ route('password.request') }}" class="forgot-link">

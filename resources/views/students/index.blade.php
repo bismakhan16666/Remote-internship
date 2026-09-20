@@ -211,6 +211,16 @@
     .empty-state i { font-size: 60px; color: #ccc; margin-bottom: 15px; }
     .empty-state h5 { color: #999; }
 
+    .view-only-badge {
+        background: #e9ecef;
+        color: #6c757d;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
     @media (max-width: 768px) {
         .pagination { justify-content: center; gap: 4px; }
         .pagination .page-link { padding: 6px 10px; font-size: 12px; }
@@ -287,16 +297,22 @@
 
     <div class="tab-content">
 
+        <!-- ============================================ -->
         <!-- TAB 1: STUDENTS -->
+        <!-- ============================================ -->
         <div class="tab-pane fade show active" id="students-tab">
             <div class="table-card">
                 <div class="card-header-custom">
                     <h4><i class="fas fa-user-graduate"></i> Students List</h4>
                     <div class="d-flex gap-2 align-items-center">
                         <span class="badge-custom">{{ $students->total() }} Students</span>
-                        <a href="{{ route('students.create') }}" class="btn-add-student">
-                            <i class="fas fa-plus"></i> Add Student
-                        </a>
+
+                        {{-- Add Student — Sirf Admin --}}
+                        @can('manage-students')
+                            <a href="{{ route('students.create') }}" class="btn-add-student">
+                                <i class="fas fa-plus"></i> Add Student
+                            </a>
+                        @endcan
                     </div>
                 </div>
 
@@ -349,15 +365,20 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <a href="{{ route('students.edit', $student->id) }}" class="action-btn edit">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <form action="{{ route('students.delete', $student->id) }}" method="POST" style="display:inline;">
-                                            @csrf @method('DELETE')
-                                            <button type="submit" class="action-btn delete" onclick="return confirm('Delete this student?')">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
+                                        {{-- Edit/Delete — Sirf Admin --}}
+                                        @can('manage-students')
+                                            <a href="{{ route('students.edit', $student->id) }}" class="action-btn edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form action="{{ route('students.delete', $student->id) }}" method="POST" style="display:inline;">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="action-btn delete" onclick="return confirm('Delete this student?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        @else
+                                            <span class="view-only-badge">View Only</span>
+                                        @endcan
                                     </td>
                                 </tr>
                             @empty
@@ -416,16 +437,22 @@
             </div>
         </div>
 
+        <!-- ============================================ -->
         <!-- TAB 2: TEACHERS -->
+        <!-- ============================================ -->
         <div class="tab-pane fade" id="teachers-tab">
             <div class="table-card">
                 <div class="card-header-custom">
                     <h4><i class="fas fa-chalkboard-teacher"></i> Teachers List</h4>
                     <div class="d-flex gap-2 align-items-center">
                         <span class="badge-custom">{{ $teachers->total() }} Teachers</span>
-                        <a href="{{ route('teachers.create') }}" class="btn-add-student">
-                            <i class="fas fa-plus"></i> Add Teacher
-                        </a>
+
+                        {{-- Add Teacher — Sirf Admin --}}
+                        @can('manage-teachers')
+                            <a href="{{ route('teachers.create') }}" class="btn-add-student">
+                                <i class="fas fa-plus"></i> Add Teacher
+                            </a>
+                        @endcan
                     </div>
                 </div>
 
@@ -478,15 +505,20 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <a href="{{ route('teachers.edit', $teacher->id) }}" class="action-btn edit">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <form action="{{ route('teachers.delete', $teacher->id) }}" method="POST" style="display:inline;">
-                                            @csrf @method('DELETE')
-                                            <button type="submit" class="action-btn delete" onclick="return confirm('Delete this teacher?')">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
+                                        {{-- Edit/Delete — Sirf Admin --}}
+                                        @can('manage-teachers')
+                                            <a href="{{ route('teachers.edit', $teacher->id) }}" class="action-btn edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form action="{{ route('teachers.delete', $teacher->id) }}" method="POST" style="display:inline;">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="action-btn delete" onclick="return confirm('Delete this teacher?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        @else
+                                            <span class="view-only-badge">View Only</span>
+                                        @endcan
                                     </td>
                                 </tr>
                             @empty
@@ -545,7 +577,9 @@
             </div>
         </div>
 
+        <!-- ============================================ -->
         <!-- TAB 3: SETTINGS -->
+        <!-- ============================================ -->
         <div class="tab-pane fade" id="settings-tab">
             <div class="row">
                 <div class="col-md-6">
@@ -588,24 +622,31 @@
                     <div class="settings-card">
                         <h4><i class="fas fa-tools"></i> Quick Actions</h4>
                         <div class="row">
+                            @can('manage-students')
                             <div class="col-md-3 mb-3">
                                 <a href="{{ route('students.create') }}" class="btn btn-dark w-100 py-3">
                                     <i class="fas fa-user-plus fa-2x d-block mb-2"></i>
                                     Add Student
                                 </a>
                             </div>
+                            @endcan
+
+                            @can('manage-teachers')
                             <div class="col-md-3 mb-3">
                                 <a href="{{ route('teachers.create') }}" class="btn btn-dark w-100 py-3">
                                     <i class="fas fa-chalkboard-teacher fa-2x d-block mb-2"></i>
                                     Add Teacher
                                 </a>
                             </div>
+                            @endcan
+
                             <div class="col-md-3 mb-3">
                                 <a href="{{ route('students.index') }}" class="btn btn-dark w-100 py-3">
                                     <i class="fas fa-users fa-2x d-block mb-2"></i>
                                     View Students
                                 </a>
                             </div>
+
                             <div class="col-md-3 mb-3">
                                 <a href="{{ route('logout') }}" class="btn btn-danger w-100 py-3"
                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
@@ -614,6 +655,11 @@
                                 </a>
                             </div>
                         </div>
+
+                        {{-- Logout Form (hidden) --}}
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                            @csrf
+                        </form>
                     </div>
                 </div>
             </div>

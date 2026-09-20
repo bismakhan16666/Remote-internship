@@ -5,119 +5,214 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Student Management System')</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f2f5;
-            min-height: 100vh;
-        }
-        .header {
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
+        body { background: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        /* Header */
+        .main-header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: white;
-            padding: 20px 0;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.3);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
-        .header h1 { font-size: 28px; font-weight: 700; letter-spacing: 1px; }
-        .header h1 span { color: #f5c842; }
-        .header .subtitle { font-size: 14px; color: #aaa; margin-top: 5px; }
-        .nav-bar {
-            background: #16213e;
-            padding: 12px 0;
-            border-bottom: 3px solid #f5c842;
-        }
-        .nav-bar a {
+        .main-header .logo {
+            font-size: 22px;
+            font-weight: 700;
             color: white;
             text-decoration: none;
+        }
+        .main-header .logo span { color: #f5c842; }
+
+        /* User Menu */
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .user-info {
+            text-align: right;
+            line-height: 1.2;
+        }
+        .user-info .name {
+            font-weight: 600;
+            font-size: 14px;
+            color: #f5c842;
+        }
+        .user-info .role {
+            font-size: 11px;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Logout Button */
+        .logout-btn {
+            background: transparent;
+            border: 2px solid #f5c842;
+            color: #f5c842;
             padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .logout-btn:hover {
+            background: #f5c842;
+            color: #1a1a2e;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 200, 66, 0.4);
+        }
+        .logout-btn i { font-size: 14px; }
+
+        /* Nav */
+        .main-nav {
+            background: #16213e;
+            padding: 0 30px;
+            display: flex;
+            gap: 5px;
+            border-bottom: 2px solid #f5c842;
+            flex-wrap: wrap;
+        }
+        .main-nav a {
+            color: #ddd;
+            padding: 12px 20px;
+            text-decoration: none;
             font-weight: 500;
+            font-size: 14px;
             transition: 0.3s;
-            border-radius: 5px;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
-        .nav-bar a:hover { background: #f5c842; color: #1a1a2e; }
-        .nav-bar a.active { background: #f5c842; color: #1a1a2e; }
-        .footer {
+        .main-nav a:hover, .main-nav a.active {
+            background: #f5c842;
+            color: #1a1a2e;
+        }
+        .main-nav a i { font-size: 14px; }
+
+        /* Content */
+        .main-content { padding: 20px; min-height: 70vh; }
+
+        /* Footer */
+        .main-footer {
             background: #1a1a2e;
-            color: white;
+            color: #aaa;
             text-align: center;
-            padding: 25px 0;
-            margin-top: 40px;
+            padding: 20px;
+            font-size: 13px;
+            border-top: 2px solid #f5c842;
         }
-        .footer a { color: #f5c842; text-decoration: none; }
+        .main-footer strong { color: #f5c842; }
+
+        /* Alert */
+        .alert-custom {
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+        }
+        .alert-custom.success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 5px solid #28a745;
+        }
+        .alert-custom.error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 5px solid #dc3545;
+        }
+        .alert-custom i { font-size: 20px; }
     </style>
+
     @yield('styles')
 </head>
 <body>
 
-    <div class="header">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h1>Student <span>Management</span> System</h1>
-                    <div class="subtitle">@yield('subtitle', 'Welcome')</div>
+    <!-- ============ HEADER ============ -->
+    <header class="main-header">
+        <a href="{{ url('/') }}" class="logo">
+            <i class="fas fa-graduation-cap"></i> Student <span>Management</span>
+        </a>
+
+        <div class="user-menu">
+            @auth
+                <div class="user-info">
+                    <div class="name">{{ Auth::user()->name }}</div>
+                    <div class="role">{{ Auth::user()->user_type }}</div>
                 </div>
-                <div class="col-md-4 text-end">
-                    <i class="fas fa-graduation-cap" style="font-size: 50px; opacity: 0.3;"></i>
+
+                <!-- Logout Button -->
+                <form method="POST" action="{{ route('logout') }}" style="display:inline;">
+                    @csrf
+                    <button type="submit" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
+                </form>
+            @endauth
+        </div>
+    </header>
+
+    <!-- ============ NAV ============ -->
+    <nav class="main-nav">
+        @auth
+            @if(Auth::user()->user_type === 'admin')
+                <a href="{{ route('students.index') }}"><i class="fas fa-user-graduate"></i> Students</a>
+                <a href="{{ route('teachers.create') }}"><i class="fas fa-chalkboard-teacher"></i> Add Teacher</a>
+                <a href="{{ route('stats.dashboard') }}"><i class="fas fa-chart-bar"></i> Stats</a>
+            @elseif(Auth::user()->user_type === 'teacher')
+                <a href="{{ route('teacher.dashboard') }}"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="{{ route('teacher.students') }}"><i class="fas fa-users"></i> My Students</a>
+            @elseif(Auth::user()->user_type === 'student')
+                <a href="{{ route('student.dashboard') }}"><i class="fas fa-home"></i> My Dashboard</a>
+            @endif
+        @endauth
+    </nav>
+
+    <!-- ============ CONTENT ============ -->
+    <main class="main-content">
+        @if(session('success'))
+            <div class="container">
+                <div class="alert-custom success">
+                    <i class="fas fa-check-circle"></i>
+                    {{ session('success') }}
                 </div>
             </div>
-        </div>
-    </div>
+        @endif
 
-    @auth
-    <div class="nav-bar">
-        <div class="container">
-            @if(Auth::user()->user_type === 'admin')
-                <a href="{{ route('students.index') }}" class="{{ request()->routeIs('students.index') ? 'active' : '' }}">
-                    <i class="fas fa-users"></i> Students
-                </a>
-                <a href="{{ route('students.create') }}">
-                    <i class="fas fa-user-plus"></i> Add Student
-                </a>
-                <a href="{{ route('teachers.create') }}">
-                    <i class="fas fa-chalkboard-teacher"></i> Add Teacher
-                </a>
-                <a href="{{ route('stats.dashboard') }}" class="{{ request()->routeIs('stats.dashboard') ? 'active' : '' }}">
-                    <i class="fas fa-chart-bar"></i> Stats
-                </a>
-            @elseif(Auth::user()->user_type === 'teacher')
-                <a href="{{ route('teacher.dashboard') }}" class="{{ request()->routeIs('teacher.dashboard') ? 'active' : '' }}">
-                    <i class="fas fa-home"></i> My Dashboard
-                </a>
-                <a href="{{ route('teacher.students') }}" class="{{ request()->routeIs('teacher.students') ? 'active' : '' }}">
-                    <i class="fas fa-users"></i> My Students
-                </a>
-            @elseif(Auth::user()->user_type === 'student')
-                <a href="{{ route('student.dashboard') }}" class="{{ request()->routeIs('student.dashboard') ? 'active' : '' }}">
-                    <i class="fas fa-home"></i> My Dashboard
-                </a>
-            @endif
+        @if(session('error'))
+            <div class="container">
+                <div class="alert-custom error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ session('error') }}
+                </div>
+            </div>
+        @endif
 
-            <form method="POST" action="{{ route('logout') }}" style="display: inline; float: right;">
-                @csrf
-                <button type="submit" style="background: transparent; border: none; color: white; padding: 8px 20px; font-weight: 500; cursor: pointer; border-radius: 5px; transition: 0.3s;"
-                        onmouseover="this.style.background='#f5c842'; this.style.color='#1a1a2e';"
-                        onmouseout="this.style.background='transparent'; this.style.color='white';">
-                    <i class="fas fa-sign-out-alt"></i> Logout ({{ Auth::user()->name }})
-                </button>
-            </form>
-        </div>
-    </div>
-    @endauth
-
-    <main>
         @yield('content')
     </main>
 
-    <div class="footer">
-        <div class="container">
-            <p>&copy; {{ date('Y') }} Student Management System. All Rights Reserved.</p>
-        </div>
-    </div>
+    <!-- ============ FOOTER ============ -->
+    <footer class="main-footer">
+        &copy; {{ date('Y') }} <strong>Student Management System</strong>. All Rights Reserved.
+    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    @yield('scripts')
 </body>
 </html>

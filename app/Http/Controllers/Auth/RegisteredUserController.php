@@ -6,40 +6,45 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
-use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
 {
-    public function create(): View
+    /**
+     * Display the registration view.
+     */
+    public function create()
     {
         return view('auth.register');
     }
 
-    public function store(Request $request): RedirectResponse
+    /**
+     * Handle an incoming registration request.
+     */
+    public function store(Request $request)
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'user_type' => ['required', 'in:student,teacher,admin'],  
+            'name'      => ['required', 'string', 'max:255'],
+            'email'     => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password'  => ['required', 'confirmed', Rules\Password::defaults()],
+            'user_type' => ['required', 'in:admin,teacher,student'],
         ]);
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'user_type' => $request->user_type,  
+            'name'      => $request->name,
+            'email'     => $request->email,
+            'password'  => Hash::make($request->password),
+            'user_type' => $request->user_type,
         ]);
 
         event(new Registered($user));
+
         Auth::login($user);
 
-        //  Role-based redirect
+        // Role-based redirect
         if ($user->user_type === 'admin') {
             return redirect('/students');
         } elseif ($user->user_type === 'teacher') {
@@ -48,6 +53,6 @@ class RegisteredUserController extends Controller
             return redirect('/student/dashboard');
         }
 
-        return redirect(RouteServiceProvider::HOME);
+        return redirect('/dashboard');
     }
 }

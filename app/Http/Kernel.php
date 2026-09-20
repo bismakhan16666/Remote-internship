@@ -8,8 +8,7 @@ class Kernel extends HttpKernel
 {
     /**
      * The application's global HTTP middleware stack.
-     *
-     * These middleware are run during every request to your application.
+     * Ye middleware HAR request pe chalta hai.
      *
      * @var array<int, class-string|string>
      */
@@ -21,6 +20,9 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+
+        // 👇 Custom Global Middleware — Har request pe chalega
+        \App\Http\Middleware\LogRequests::class,
     ];
 
     /**
@@ -48,8 +50,7 @@ class Kernel extends HttpKernel
 
     /**
      * The application's route middleware.
-     *
-     * These middleware may be assigned to groups or used individually.
+     * Ye middleware specific routes pe chalta hai.
      *
      * @var array<string, class-string|string>
      */
@@ -63,5 +64,8 @@ class Kernel extends HttpKernel
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+
+        // Custom middleware alias
+        'role' => \App\Http\Middleware\RoleMiddleware::class,
     ];
 }

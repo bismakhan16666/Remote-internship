@@ -12,10 +12,10 @@ use App\Http\Controllers\StatsController;
 |--------------------------------------------------------------------------
 */
 
-//  Breeze Auth Routes
+// Breeze Auth Routes
 require __DIR__.'/auth.php';
 
-//  Root URL
+// Root URL — role ke hisaab se redirect
 Route::get('/', function () {
     if (Auth::check()) {
         $user = Auth::user();
@@ -26,19 +26,15 @@ Route::get('/', function () {
     return redirect('/login');
 });
 
-//  Dashboard
+// Dashboard (simple — koi redirect nahi)
 Route::get('/dashboard', function () {
-    $user = Auth::user();
-    if ($user->user_type === 'admin') return redirect('/students');
-    elseif ($user->user_type === 'teacher') return redirect('/teacher/dashboard');
-    elseif ($user->user_type === 'student') return redirect('/student/dashboard');
     return view('dashboard');
 })->middleware(['auth'])->name('dashboard');
 
-//  Authenticated Routes (Class-based)
-Route::middleware(['auth'])->group(function () {
 
-    // Admin
+// ================== ADMIN ONLY ==================
+Route::middleware(['auth', 'role:admin'])->group(function () {
+
     Route::get('/students', [StudentController::class, 'adminIndex'])->name('students.index');
     Route::get('/admin/dashboard', [StudentController::class, 'adminIndex'])->name('admin.dashboard');
 
@@ -57,19 +53,28 @@ Route::middleware(['auth'])->group(function () {
     Route::put('edit-teacher/{id}', [TeachersController::class, 'update'])->name('teachers.update');
     Route::delete('delete-teacher/{id}', [TeachersController::class, 'destroy'])->name('teachers.delete');
 
-    // Teacher Dashboard
+    // Stats
+    Route::get('stats/dashboard', [StatsController::class, 'dashboard'])->name('stats.dashboard');
+});
+
+
+// ================== TEACHER ONLY ==================
+Route::middleware(['auth', 'role:teacher'])->group(function () {
+
     Route::get('/teacher/dashboard', [TeachersController::class, 'dashboard'])->name('teacher.dashboard');
     Route::get('/teacher/students', [TeachersController::class, 'myStudents'])->name('teacher.students');
     Route::get('/teacher/class/{id}', [TeachersController::class, 'showClass'])->name('teacher.class');
     Route::get('/teacher/student/{id}', [TeachersController::class, 'showStudent'])->name('teacher.student');
     Route::post('/teacher/student/{id}/comment', [TeachersController::class, 'addComment'])->name('teacher.comment');
-
-    // Student Dashboard
-    Route::get('/student/dashboard', [StudentController::class, 'studentDashboard'])->name('student.dashboard');
-
-    // Stats
-    Route::get('stats/dashboard', [StatsController::class, 'dashboard'])->name('stats.dashboard');
 });
+
+
+// ================== STUDENT ONLY ==================
+Route::middleware(['auth', 'role:student'])->group(function () {
+
+    Route::get('/student/dashboard', [StudentController::class, 'studentDashboard'])->name('student.dashboard');
+});
+
 
 Route::fallback(function () {
     return 'The Page Is Not Found. Please Try Again';

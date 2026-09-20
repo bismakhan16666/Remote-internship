@@ -9,6 +9,7 @@ use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
@@ -53,7 +54,7 @@ class TeachersController extends Controller
                            ->first();
 
         if (!$teacher) {
-            return redirect('/home')->with('error', 'No teacher record found.');
+            return redirect('/dashboard')->with('error', 'No teacher record found.');
         }
 
         $classIds = $teacher->classes->pluck('id');
@@ -82,24 +83,42 @@ class TeachersController extends Controller
         return view('teachers.student-details', compact('student'));
     }
 
-    // Add Comment
+    // ============================================
+    // Add Comment — Admin + Teacher
+    // ============================================
     public function addComment(Request $request, $studentId)
     {
+        if (!Gate::allows('add-comment')) {
+            abort(403, 'You are not allowed to add remarks.');
+        }
+
         $request->validate(['comment' => 'required|string|max:1000']);
         $student = Student::findOrFail($studentId);
         $student->comments()->create(['comment' => $request->comment]);
         return redirect()->back()->with('success', 'Remark added!');
     }
 
-    // Show Add Teacher Form
+    // ============================================
+    // Show Add Teacher Form — Sirf Admin
+    // ============================================
     public function create()
     {
+        if (!Gate::allows('manage-teachers')) {
+            abort(403, 'Only admin can add teachers.');
+        }
+
         return view('teachers.add');
     }
 
-    // Store Teacher
+    // ============================================
+    // Store Teacher — Sirf Admin
+    // ============================================
     public function store(Request $request)
     {
+        if (!Gate::allows('manage-teachers')) {
+            abort(403, 'Only admin can add teachers.');
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:teachers,email',
@@ -138,16 +157,28 @@ class TeachersController extends Controller
         return redirect()->route('students.index')->with('success', 'Teacher Added Successfully!');
     }
 
-    // Show Edit Form
+    // ============================================
+    // Show Edit Form — Sirf Admin
+    // ============================================
     public function edit($id)
     {
+        if (!Gate::allows('manage-teachers')) {
+            abort(403, 'Only admin can edit teachers.');
+        }
+
         $teacher = Teachers::findOrFail($id);
         return view('teachers.edit', compact('teacher'));
     }
 
-    // Update Teacher
+    // ============================================
+    // Update Teacher — Sirf Admin
+    // ============================================
     public function update(Request $request, $id)
     {
+        if (!Gate::allows('manage-teachers')) {
+            abort(403, 'Only admin can edit teachers.');
+        }
+
         $teacher = Teachers::findOrFail($id);
 
         $request->validate([
@@ -183,9 +214,15 @@ class TeachersController extends Controller
         return redirect()->route('students.index')->with('success', 'Teacher Updated Successfully!');
     }
 
-    // Delete Teacher
+    // ============================================
+    // Delete Teacher — Sirf Admin
+    // ============================================
     public function destroy($id)
     {
+        if (!Gate::allows('manage-teachers')) {
+            abort(403, 'Only admin can delete teachers.');
+        }
+
         $teacher = Teachers::findOrFail($id);
 
         if ($teacher->image && Storage::disk('public')->exists($teacher->image)) {

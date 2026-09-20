@@ -26,7 +26,7 @@ class LoginController extends Controller
             return '/student/dashboard';
         }
 
-        return '/home';
+        return '/dashboard';
     }
 
     public function __construct()
