@@ -136,14 +136,46 @@
             color: #721c24;
             border-left: 5px solid #dc3545;
         }
+        .alert-custom.warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 5px solid #ffc107;
+        }
+        .alert-custom.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 5px solid #17a2b8;
+        }
         .alert-custom i { font-size: 20px; }
+
+        /* Real-time Notification Box */
+        .realtime-box {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 350px;
+        }
+        .realtime-notification {
+            background: #1a1a2e;
+            color: #f5c842;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
     </style>
 
     @yield('styles')
 </head>
 <body>
 
-    <!-- ============ HEADER ============ -->
+    <!-- HEADER -->
     <header class="main-header">
         <a href="{{ url('/') }}" class="logo">
             <i class="fas fa-graduation-cap"></i> Student <span>Management</span>
@@ -156,7 +188,6 @@
                     <div class="role">{{ Auth::user()->user_type }}</div>
                 </div>
 
-                <!-- Logout Button -->
                 <form method="POST" action="{{ route('logout') }}" style="display:inline;">
                     @csrf
                     <button type="submit" class="logout-btn">
@@ -168,13 +199,14 @@
         </div>
     </header>
 
-    <!-- ============ NAV ============ -->
+    <!-- NAV -->
     <nav class="main-nav">
         @auth
             @if(Auth::user()->user_type === 'admin')
                 <a href="{{ route('students.index') }}"><i class="fas fa-user-graduate"></i> Students</a>
                 <a href="{{ route('teachers.create') }}"><i class="fas fa-chalkboard-teacher"></i> Add Teacher</a>
                 <a href="{{ route('stats.dashboard') }}"><i class="fas fa-chart-bar"></i> Stats</a>
+                <a href="{{ route('system.dashboard') }}"><i class="fas fa-cogs"></i> System</a>
             @elseif(Auth::user()->user_type === 'teacher')
                 <a href="{{ route('teacher.dashboard') }}"><i class="fas fa-home"></i> Dashboard</a>
                 <a href="{{ route('teacher.students') }}"><i class="fas fa-users"></i> My Students</a>
@@ -184,35 +216,108 @@
         @endauth
     </nav>
 
-    <!-- ============ CONTENT ============ -->
+    <!-- REAL-TIME NOTIFICATION BOX -->
+    <div class="realtime-box" id="realtimeBox"></div>
+
+    <!-- CONTENT -->
     <main class="main-content">
-        @if(session('success'))
-            <div class="container">
+
+        <div class="container">
+            @if(session('success'))
                 <div class="alert-custom success">
                     <i class="fas fa-check-circle"></i>
                     {{ session('success') }}
                 </div>
-            </div>
-        @endif
+            @endif
 
-        @if(session('error'))
-            <div class="container">
+            @if(session('error'))
                 <div class="alert-custom error">
                     <i class="fas fa-exclamation-circle"></i>
                     {{ session('error') }}
                 </div>
-            </div>
-        @endif
+            @endif
+
+            @if(session('warning'))
+                <div class="alert-custom warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    {{ session('warning') }}
+                </div>
+            @endif
+
+            @if(session('info'))
+                <div class="alert-custom info">
+                    <i class="fas fa-info-circle"></i>
+                    {{ session('info') }}
+                </div>
+            @endif
+        </div>
 
         @yield('content')
     </main>
 
-    <!-- ============ FOOTER ============ -->
+    <!-- FOOTER -->
     <footer class="main-footer">
         &copy; {{ date('Y') }} <strong>Student Management System</strong>. All Rights Reserved.
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    {{-- ============================================ --}}
+    {{-- Pusher JS + Laravel Echo (Real-time) --}}
+    {{-- ============================================ --}}
+    @auth
+    <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.15.3/dist/echo.iife.js"></script>
+
+    <script>
+        // Initialize Pusher
+        window.Pusher = Pusher;
+
+        // Initialize Laravel Echo with Pusher
+        window.Echo = new Echo({
+            broadcaster: 'pusher',
+            key: '{{ env("PUSHER_APP_KEY") }}',
+            cluster: '{{ env("PUSHER_APP_CLUSTER") }}',
+            forceTLS: true,
+            encrypted: true,
+        });
+
+        // Listen for StudentAdded event on 'students' channel
+        window.Echo.channel('students')
+            .listen('.StudentAdded', (e) => {
+                console.log('Student Added Event:', e);
+
+                // Show real-time notification
+                const box = document.getElementById('realtimeBox');
+                if (box) {
+                    const notification = document.createElement('div');
+                    notification.className = 'realtime-notification';
+                    notification.innerHTML = `
+                        <strong>New Student Added!</strong><br>
+                        Name: ${e.name || 'N/A'}<br>
+                        Email: ${e.email || 'N/A'}<br>
+                        Time: ${e.time || new Date().toLocaleString()}
+                    `;
+                    box.appendChild(notification);
+
+                    // Auto remove after 5 seconds
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 5000);
+                }
+            });
+
+        // Connection status
+        window.Echo.connector.pusher.connection.bind('connected', () => {
+            console.log('Pusher connected!');
+        });
+
+        window.Echo.connector.pusher.connection.bind('error', (err) => {
+            console.error('Pusher error:', err);
+        });
+    </script>
+    @endauth
+
     @yield('scripts')
 </body>
 </html>

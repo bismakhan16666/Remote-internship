@@ -221,6 +221,17 @@
         text-transform: uppercase;
     }
 
+    .cache-badge {
+        background: #d4edda;
+        color: #155724;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-left: 10px;
+    }
+
     @media (max-width: 768px) {
         .pagination { justify-content: center; gap: 4px; }
         .pagination .page-link { padding: 6px 10px; font-size: 12px; }
@@ -231,61 +242,69 @@
 @section('content')
 <div class="dashboard-container">
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show">
-            <i class="fas fa-check-circle"></i> {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-    @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show">
-            <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
+    {{-- ============================================ --}}
+    {{-- ALERTS — Reusable Component --}}
+    {{-- ============================================ --}}
+    <x-alert type="success" :message="session('success')" />
+    <x-alert type="error" :message="session('error')" />
 
-    <!-- STATS -->
+    {{-- ============================================ --}}
+    {{-- STATS — Reusable Components (From Cache) --}}
+    {{-- ============================================ --}}
     <div class="row">
         <div class="col-md-3">
-            <div class="stat-card blue">
-                <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
-                <div class="stat-number">{{ $totalStudents ?? 0 }}</div>
-                <div class="stat-label">Total Students</div>
-            </div>
+            <x-stat-card 
+                color="blue" 
+                icon="fa-user-graduate" 
+                :number="$stats['totalStudents'] ?? 0" 
+                label="Total Students" 
+            />
         </div>
         <div class="col-md-3">
-            <div class="stat-card green">
-                <div class="stat-icon"><i class="fas fa-user-check"></i></div>
-                <div class="stat-number">{{ $activeStudents ?? 0 }}</div>
-                <div class="stat-label">Active Students</div>
-            </div>
+            <x-stat-card 
+                color="green" 
+                icon="fa-user-check" 
+                :number="$stats['activeStudents'] ?? 0" 
+                label="Active Students" 
+            />
         </div>
         <div class="col-md-3">
-            <div class="stat-card purple">
-                <div class="stat-icon"><i class="fas fa-chalkboard-teacher"></i></div>
-                <div class="stat-number">{{ $totalTeachers ?? 0 }}</div>
-                <div class="stat-label">Total Teachers</div>
-            </div>
+            <x-stat-card 
+                color="purple" 
+                icon="fa-chalkboard-teacher" 
+                :number="$stats['totalTeachers'] ?? 0" 
+                label="Total Teachers" 
+            />
         </div>
         <div class="col-md-3">
-            <div class="stat-card teal">
-                <div class="stat-icon"><i class="fas fa-school"></i></div>
-                <div class="stat-number">{{ $totalClasses ?? 0 }}</div>
-                <div class="stat-label">Total Classes</div>
-            </div>
+            <x-stat-card 
+                color="teal" 
+                icon="fa-school" 
+                :number="$stats['totalClasses'] ?? 0" 
+                label="Total Classes" 
+            />
         </div>
+    </div>
+
+    {{-- Cache Indicator --}}
+    <div class="alert alert-info" style="border-radius: 10px; border-left: 5px solid #17a2b8;">
+        <i class="fas fa-database"></i>
+        <strong>Cache Active:</strong> Ye data 10 minutes tak cache me rahega.
+        <a href="{{ route('cache.clear') }}" class="btn btn-sm btn-warning float-end">
+            <i class="fas fa-sync"></i> Clear Cache
+        </a>
     </div>
 
     <!-- TABS -->
     <ul class="nav nav-tabs nav-tabs-custom" role="tablist">
         <li class="nav-item">
             <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#students-tab" type="button">
-                <i class="fas fa-user-graduate"></i> Students ({{ $totalStudents }})
+                <i class="fas fa-user-graduate"></i> Students ({{ $stats['totalStudents'] }})
             </button>
         </li>
         <li class="nav-item">
             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#teachers-tab" type="button">
-                <i class="fas fa-chalkboard-teacher"></i> Teachers ({{ $totalTeachers }})
+                <i class="fas fa-chalkboard-teacher"></i> Teachers ({{ $stats['totalTeachers'] }})
             </button>
         </li>
         <li class="nav-item">
@@ -307,8 +326,8 @@
                     <div class="d-flex gap-2 align-items-center">
                         <span class="badge-custom">{{ $students->total() }} Students</span>
 
-                        {{-- Add Student — Sirf Admin --}}
-                        @can('manage-students')
+                        {{-- Add Student — Admin only (Policy) --}}
+                        @can('create', App\Models\Student::class)
                             <a href="{{ route('students.create') }}" class="btn-add-student">
                                 <i class="fas fa-plus"></i> Add Student
                             </a>
@@ -360,34 +379,33 @@
                                         </strong>
                                     </td>
                                     <td>
-                                        <span class="status-badge {{ $student->status ?? 'active' }}">
-                                            {{ ucfirst($student->status ?? 'Active') }}
-                                        </span>
+                                        <x-status-badge :status="$student->status ?? 'active'" />
                                     </td>
                                     <td>
-                                        {{-- Edit/Delete — Sirf Admin --}}
-                                        @can('manage-students')
+                                        @can('update', $student)
                                             <a href="{{ route('students.edit', $student->id) }}" class="action-btn edit">
                                                 <i class="fas fa-edit"></i>
                                             </a>
+                                        @endcan
+
+                                        @can('delete', $student)
                                             <form action="{{ route('students.delete', $student->id) }}" method="POST" style="display:inline;">
                                                 @csrf @method('DELETE')
                                                 <button type="submit" class="action-btn delete" onclick="return confirm('Delete this student?')">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
-                                        @else
-                                            <span class="view-only-badge">View Only</span>
                                         @endcan
+
+                                        @cannot('update', $student)
+                                            <span class="view-only-badge">View Only</span>
+                                        @endcannot
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
                                     <td colspan="10">
-                                        <div class="empty-state">
-                                            <i class="fas fa-user-graduate"></i>
-                                            <h5>No Students Found</h5>
-                                        </div>
+                                        <x-empty-state icon="fa-user-graduate" message="No Students Found" />
                                     </td>
                                 </tr>
                             @endforelse
@@ -447,8 +465,7 @@
                     <div class="d-flex gap-2 align-items-center">
                         <span class="badge-custom">{{ $teachers->total() }} Teachers</span>
 
-                        {{-- Add Teacher — Sirf Admin --}}
-                        @can('manage-teachers')
+                        @can('create', App\Models\Teachers::class)
                             <a href="{{ route('teachers.create') }}" class="btn-add-student">
                                 <i class="fas fa-plus"></i> Add Teacher
                             </a>
@@ -500,34 +517,33 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <span class="status-badge {{ $teacher->status ?? 'active' }}">
-                                            {{ ucfirst($teacher->status ?? 'Active') }}
-                                        </span>
+                                        <x-status-badge :status="$teacher->status ?? 'active'" />
                                     </td>
                                     <td>
-                                        {{-- Edit/Delete — Sirf Admin --}}
-                                        @can('manage-teachers')
+                                        @can('update', $teacher)
                                             <a href="{{ route('teachers.edit', $teacher->id) }}" class="action-btn edit">
                                                 <i class="fas fa-edit"></i>
                                             </a>
+                                        @endcan
+
+                                        @can('delete', $teacher)
                                             <form action="{{ route('teachers.delete', $teacher->id) }}" method="POST" style="display:inline;">
                                                 @csrf @method('DELETE')
                                                 <button type="submit" class="action-btn delete" onclick="return confirm('Delete this teacher?')">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
-                                        @else
-                                            <span class="view-only-badge">View Only</span>
                                         @endcan
+
+                                        @cannot('update', $teacher)
+                                            <span class="view-only-badge">View Only</span>
+                                        @endcannot
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
                                     <td colspan="11">
-                                        <div class="empty-state">
-                                            <i class="fas fa-chalkboard-teacher"></i>
-                                            <h5>No Teachers Found</h5>
-                                        </div>
+                                        <x-empty-state icon="fa-chalkboard-teacher" message="No Teachers Found" />
                                     </td>
                                 </tr>
                             @endforelse
@@ -605,15 +621,15 @@
                         <h4><i class="fas fa-school"></i> System Stats</h4>
                         <div class="settings-item">
                             <div><div class="label">Total Students</div></div>
-                            <div class="value"><strong>{{ $totalStudents }}</strong></div>
+                            <div class="value"><strong>{{ $stats['totalStudents'] }}</strong></div>
                         </div>
                         <div class="settings-item">
                             <div><div class="label">Total Teachers</div></div>
-                            <div class="value"><strong>{{ $totalTeachers }}</strong></div>
+                            <div class="value"><strong>{{ $stats['totalTeachers'] }}</strong></div>
                         </div>
                         <div class="settings-item">
                             <div><div class="label">Total Classes</div></div>
-                            <div class="value"><strong>{{ $totalClasses }}</strong></div>
+                            <div class="value"><strong>{{ $stats['totalClasses'] }}</strong></div>
                         </div>
                     </div>
                 </div>
@@ -622,7 +638,7 @@
                     <div class="settings-card">
                         <h4><i class="fas fa-tools"></i> Quick Actions</h4>
                         <div class="row">
-                            @can('manage-students')
+                            @can('create', App\Models\Student::class)
                             <div class="col-md-3 mb-3">
                                 <a href="{{ route('students.create') }}" class="btn btn-dark w-100 py-3">
                                     <i class="fas fa-user-plus fa-2x d-block mb-2"></i>
@@ -631,7 +647,7 @@
                             </div>
                             @endcan
 
-                            @can('manage-teachers')
+                            @can('create', App\Models\Teachers::class)
                             <div class="col-md-3 mb-3">
                                 <a href="{{ route('teachers.create') }}" class="btn btn-dark w-100 py-3">
                                     <i class="fas fa-chalkboard-teacher fa-2x d-block mb-2"></i>
@@ -656,7 +672,6 @@
                             </div>
                         </div>
 
-                        {{-- Logout Form (hidden) --}}
                         <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                             @csrf
                         </form>

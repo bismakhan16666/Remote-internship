@@ -2,15 +2,31 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;   // 👈 Already imported
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use App\Models\Teachers;   
-use App\Models\Classes; 
+use App\Models\Teachers;
+use App\Models\Classes;
 
-class User extends Authenticatable
+// ============================================
+// BEFORE (OLD CODE):
+// ============================================
+// class User extends Authenticatable
+// {
+//     use HasApiTokens, HasFactory, Notifiable;
+
+// ============================================
+// AFTER (NEW CODE — WITH MustVerifyEmail):
+// ============================================
+// WHAT'S NEW:
+// 1. implements MustVerifyEmail — email verification enable
+// 2. Iske baad Laravel automatically verification email bhejega
+// 3. User ko verify karna zaroori hoga
+// ============================================
+
+class User extends Authenticatable implements MustVerifyEmail   // 👈 Ye add kiya
 {
     use HasApiTokens, HasFactory, Notifiable;
 
@@ -23,6 +39,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'user_type',   // 👈 Ye add karo (registration me use ho raha hai)
     ];
 
     /**
@@ -43,41 +60,46 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
-    //  One-to-One: User has one Student
+
+    // ============================================
+    // RELATIONSHIPS
+    // ============================================
+
+    // One-to-One: User has one Student
     public function student()
     {
         return $this->hasOne(Student::class);
     }
 
-    //  One-to-One: User has one Teacher
+    // One-to-One: User has one Teacher
     public function teacher()
     {
         return $this->hasOne(Teachers::class);
     }
-    //  Has One Through: User has one Class (through Teacher)
+
+    // Has One Through: User has one Class (through Teacher)
     public function class()
     {
         return $this->hasOneThrough(
-            Classes::class,     // Final Model (jo chahiye)
-            Teachers::class,    // Through Model (bridge)
-            'user_id',          // Foreign key on teachers table (linking to users)
-            'teacher_id',       // Foreign key on classes table (linking to teachers)
-            'id',               // Local key on users table
-            'id'                // Local key on teachers table
+            Classes::class,
+            Teachers::class,
+            'user_id',
+            'teacher_id',
+            'id',
+            'id'
         );
     }
+
     // Has Many Through: User has many Classes (through Teacher)
     public function classes()
     {
         return $this->hasManyThrough(
-        \App\Models\Classes::class,     
-        \App\Models\Teachers::class,     // Through Model (bridge)
-            'user_id',          // Foreign key on teachers table (linking to users)
-            'teacher_id',       // Foreign key on classes table (linking to teachers)
-            'id',               // Local key on users table
-            'id'                // Local key on teachers table
+            \App\Models\Classes::class,
+            \App\Models\Teachers::class,
+            'user_id',
+            'teacher_id',
+            'id',
+            'id'
         );
     }
 }
-
-

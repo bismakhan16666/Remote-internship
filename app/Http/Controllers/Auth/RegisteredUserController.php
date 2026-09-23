@@ -10,20 +10,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use App\Notifications\CustomVerifyEmail;   // 👈 Custom notification import
 
 class RegisteredUserController extends Controller
 {
-    /**
-     * Display the registration view.
-     */
     public function create()
     {
         return view('auth.register');
     }
 
-    /**
-     * Handle an incoming registration request.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -40,6 +35,24 @@ class RegisteredUserController extends Controller
             'user_type' => $request->user_type,
         ]);
 
+        // ============================================
+        // BEFORE (OLD CODE):
+        // ============================================
+        // event(new Registered($user));
+
+        // ============================================
+        // AFTER (NEW CODE — CUSTOM VERIFICATION EMAIL):
+        // ============================================
+        // WHAT'S NEW:
+        // 1. Default notification ke bajaye custom notification bhejo
+        // 2. Custom email template use karo
+        // 3. Custom subject aur design
+        // ============================================
+
+        // 👇 Custom notification bhejo
+        $user->notify(new CustomVerifyEmail());
+
+        // Event bhi fire karo (optional)
         event(new Registered($user));
 
         Auth::login($user);

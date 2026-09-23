@@ -4,7 +4,14 @@ namespace App\Providers;
 
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
-use App\Models\User;
+
+// Models
+use App\Models\Student;
+use App\Models\Teachers;
+
+// Policies
+use App\Policies\StudentPolicy;
+use App\Policies\TeacherPolicy;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -14,7 +21,8 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        // 'App\Models\Model' => 'App\Policies\ModelPolicy',
+        Student::class  => StudentPolicy::class,
+        Teachers::class => TeacherPolicy::class,
     ];
 
     /**
@@ -30,50 +38,31 @@ class AuthServiceProvider extends ServiceProvider
         // GATES — Role-based permissions
         // ============================================
 
-        // Admin: Sab kuch kar sakta hai
-        Gate::define('is-admin', function (User $user) {
+        Gate::define('is-admin', function ($user) {
             return $user->user_type === 'admin';
         });
 
-        // Teacher: Sirf apne students dekh sakta hai
-        Gate::define('is-teacher', function (User $user) {
+        Gate::define('is-teacher', function ($user) {
             return $user->user_type === 'teacher';
         });
 
-        // Student: Sirf apna dashboard
-        Gate::define('is-student', function (User $user) {
+        Gate::define('is-student', function ($user) {
             return $user->user_type === 'student';
         });
 
-        // ============================================
-        // MANAGE STUDENTS (Add, Edit, Delete)
-        // Sirf Admin
-        // ============================================
-        Gate::define('manage-students', function (User $user) {
+        Gate::define('manage-students', function ($user) {
             return $user->user_type === 'admin';
         });
 
-        // ============================================
-        // MANAGE TEACHERS (Add, Edit, Delete)
-        // Sirf Admin
-        // ============================================
-        Gate::define('manage-teachers', function (User $user) {
+        Gate::define('manage-teachers', function ($user) {
             return $user->user_type === 'admin';
         });
 
-        // ============================================
-        // VIEW STUDENTS
-        // Admin + Teacher
-        // ============================================
-        Gate::define('view-students', function (User $user) {
+        Gate::define('view-students', function ($user) {
             return in_array($user->user_type, ['admin', 'teacher']);
         });
 
-        // ============================================
-        // ADD COMMENT (Remarks)
-        // Admin + Teacher
-        // ============================================
-        Gate::define('add-comment', function (User $user) {
+        Gate::define('add-comment', function ($user) {
             return in_array($user->user_type, ['admin', 'teacher']);
         });
     }

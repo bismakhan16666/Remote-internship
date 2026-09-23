@@ -9,7 +9,6 @@ use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
@@ -44,7 +43,7 @@ class TeachersController extends Controller
     }
 
     // ============================================
-    // TEACHER KE APNE STUDENTS
+    // TEACHER'S OWN STUDENTS
     // ============================================
     public function myStudents()
     {
@@ -80,6 +79,10 @@ class TeachersController extends Controller
     public function showStudent($id)
     {
         $student = Student::with(['classes', 'subjects', 'grades.subject', 'comments'])->findOrFail($id);
+
+        // Policy: view
+        $this->authorize('view', $student);
+
         return view('teachers.student-details', compact('student'));
     }
 
@@ -88,7 +91,7 @@ class TeachersController extends Controller
     // ============================================
     public function addComment(Request $request, $studentId)
     {
-        if (!Gate::allows('add-comment')) {
+        if (!in_array(Auth::user()->user_type, ['admin', 'teacher'])) {
             abort(403, 'You are not allowed to add remarks.');
         }
 
@@ -99,25 +102,23 @@ class TeachersController extends Controller
     }
 
     // ============================================
-    // Show Add Teacher Form — Sirf Admin
+    // Show Add Teacher Form — Admin only
     // ============================================
     public function create()
     {
-        if (!Gate::allows('manage-teachers')) {
-            abort(403, 'Only admin can add teachers.');
-        }
+        // Policy: create
+        $this->authorize('create', Teachers::class);
 
         return view('teachers.add');
     }
 
     // ============================================
-    // Store Teacher — Sirf Admin
+    // Store Teacher — Admin only
     // ============================================
     public function store(Request $request)
     {
-        if (!Gate::allows('manage-teachers')) {
-            abort(403, 'Only admin can add teachers.');
-        }
+        // Policy: create
+        $this->authorize('create', Teachers::class);
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -158,28 +159,27 @@ class TeachersController extends Controller
     }
 
     // ============================================
-    // Show Edit Form — Sirf Admin
+    // Show Edit Form — Admin only
     // ============================================
     public function edit($id)
     {
-        if (!Gate::allows('manage-teachers')) {
-            abort(403, 'Only admin can edit teachers.');
-        }
-
         $teacher = Teachers::findOrFail($id);
+
+        // Policy: update
+        $this->authorize('update', $teacher);
+
         return view('teachers.edit', compact('teacher'));
     }
 
     // ============================================
-    // Update Teacher — Sirf Admin
+    // Update Teacher — Admin only
     // ============================================
     public function update(Request $request, $id)
     {
-        if (!Gate::allows('manage-teachers')) {
-            abort(403, 'Only admin can edit teachers.');
-        }
-
         $teacher = Teachers::findOrFail($id);
+
+        // Policy: update
+        $this->authorize('update', $teacher);
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -215,15 +215,14 @@ class TeachersController extends Controller
     }
 
     // ============================================
-    // Delete Teacher — Sirf Admin
+    // Delete Teacher — Admin only
     // ============================================
     public function destroy($id)
     {
-        if (!Gate::allows('manage-teachers')) {
-            abort(403, 'Only admin can delete teachers.');
-        }
-
         $teacher = Teachers::findOrFail($id);
+
+        // Policy: delete
+        $this->authorize('delete', $teacher);
 
         if ($teacher->image && Storage::disk('public')->exists($teacher->image)) {
             Storage::disk('public')->delete($teacher->image);

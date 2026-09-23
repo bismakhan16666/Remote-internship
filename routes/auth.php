@@ -11,6 +11,29 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
+/*
+|--------------------------------------------------------------------------
+| AUTH ROUTES (Breeze)
+|--------------------------------------------------------------------------
+|
+| BEFORE (OLD URLs):
+| - verify-email
+| - verify-email/{id}/{hash}
+| - email/verification-notification
+|
+| AFTER (NEW URLs — Fixed):
+| - email/verify
+| - email/verify/{id}/{hash}
+| - email/verification-notification
+|
+| REASON: CustomVerifyEmail notification generates URLs with /email/verify/
+|         So we need to match routes with that URL structure.
+|
+*/
+
+// ============================================
+// GUEST ROUTES (Not logged in)
+// ============================================
 Route::middleware('guest')->group(function () {
 
     // Register
@@ -30,22 +53,45 @@ Route::middleware('guest')->group(function () {
     Route::post('reset-password', [NewPasswordController::class, 'store'])->name('password.store');
 });
 
+
+// ============================================
+// AUTHENTICATED ROUTES (Logged in)
+// ============================================
 Route::middleware('auth')->group(function () {
 
-    // Email Verification
-    Route::get('verify-email', EmailVerificationPromptController::class)->name('verification.notice');
-    Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
-                ->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
-    Route::post('email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
-                ->middleware('throttle:6,1')->name('verification.send');
+    // ============================================
+    // EMAIL VERIFICATION
+    // ============================================
+    // BEFORE: verify-email
+    // AFTER:  email/verify
+    // ============================================
+    Route::get('email/verify', EmailVerificationPromptController::class)
+                ->name('verification.notice');
 
-    // Confirm Password
-    Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])->name('password.confirm');
+    // BEFORE: verify-email/{id}/{hash}
+    // AFTER:  email/verify/{id}/{hash}
+    Route::get('email/verify/{id}/{hash}', VerifyEmailController::class)
+                ->middleware(['signed', 'throttle:6,1'])
+                ->name('verification.verify');
+
+    Route::post('email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
+                ->middleware('throttle:6,1')
+                ->name('verification.send');
+
+    // ============================================
+    // CONFIRM PASSWORD
+    // ============================================
+    Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])
+                ->name('password.confirm');
     Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
 
-    // Update Password
+    // ============================================
+    // UPDATE PASSWORD
+    // ============================================
     Route::put('password', [PasswordController::class, 'update'])->name('password.update');
 
-    // Logout
+    // ============================================
+    // LOGOUT
+    // ============================================
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 });
